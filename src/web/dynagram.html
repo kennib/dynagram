@@ -1,0 +1,19 @@
+<!doctype html>
+<html>
+  <head>
+    <script src="antlr3-all-min.js" type="text/javascript"></script>
+    <script src="dynagramLexer.js" type="text/javascript"></script>
+    <script src="dynagramParser.js" type="text/javascript"></script>
+    <script type="text/javascript">
+      var input = "define cow.";
+      cstream = new org.antlr.runtime.ANTLRStringStream(input);
+      lexer = new dynagramLexer(cstream);
+      tstream = new org.antlr.runtime.CommonTokenStream(lexer);
+      parser = new dynagramParser(tstream);
+      var d = parser.diagram();
+    </script>
+  </head>
+  <body>
+    
+  </body>
+</html>
