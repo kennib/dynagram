@@ -2,6 +2,8 @@
 <html>
   <head>
     <script src="d3.v2.js"></script>
+    <script src="dynagramD3.js"></script>
+    <link href="dynagramD3.css" rel="stylesheet" type="text/css">
     <script src="antlr3-all-min.js" type="text/javascript"></script>
     <script src="dynagramLexer.js" type="text/javascript"></script>
     <script src="dynagramParser.js" type="text/javascript"></script>
@@ -12,9 +14,16 @@
       tstream = new org.antlr.runtime.CommonTokenStream(lexer);
       parser = new dynagramParser(tstream);
       var d = parser.diagram();
+      var diagram = new forceDiagram();
+
     </script>
   </head>
+
   <body>
-    
+    <div id="diagram">
+    </div>
+    <script type="text/javascript">
+      diagram.init()
+    </script>
   </body>
 </html>
