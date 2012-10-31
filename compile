@@ -1,0 +1,18 @@
+#!/bin/bash
+set -e
+
+MAIN_DIR=.
+SOURCE_DIR=$MAIN_DIR/src
+WEBSOURCE_DIR=$SOURCE_DIR/web
+BUILD_DIR=$MAIN_DIR/build
+WEB_DIR=~/lib/html/dynagram
+
+# Builds the ANTLR-generated parser using the grammar file
+java -cp ${MAIN_DIR}/antlr-3.1.2.jar org.antlr.Tool ${SOURCE_DIR}/dynagram.g -fo ${BUILD_DIR} 
+
+# Places necessary web source files into build
+cp -R ${WEBSOURCE_DIR}/* ${BUILD_DIR}
+
+# Places the build into a web server
+cp -R ${BUILD_DIR}/* ${WEB_DIR}
+chmod 755 -R ${WEB_DIR}
