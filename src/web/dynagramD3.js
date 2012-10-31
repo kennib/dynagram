@@ -6,8 +6,6 @@ forceDiagram = function() {
     this.color = d3.scale.category20();
 
     this.force = d3.layout.force()
-      .gravity(.05)
-      .distance(100)
       .charge(-120)
       .linkDistance(30)
       .size([width, height]);
@@ -29,7 +27,7 @@ forceDiagram = function() {
     });
   };
 
-  this.redraw = function() {
+  this.update = function() {
     var link = this.diagram.selectAll("line.link")
       .data(this.force.links(), function(d) { return d.source.id + "-" + d.target.id; });
 
@@ -38,20 +36,38 @@ forceDiagram = function() {
 
     link.exit().remove();
 
-    var node = this.diagram.selectAll("g.node")
-      .data(this.force.nodes(), function(d) { return d.name;});
-
-    var nodeEnter = node.enter().append("svg:g")
+    var nodes = this.diagram.selectAll("g");
+    var nodesData = nodes.data(this.force.nodes(), function(d) { return d;});
+    
+    nodes.selectAll("text")
+      .text(function(d) { return d.name });
+    
+    var nodesEnter = nodesData.enter().append("svg:g")
       .attr("class", "node");
 
-    nodeEnter.append("svg:text")
+    nodesEnter.append("svg:text")
       .attr("class", "nodetext")
       .attr("dx", 12)
       .attr("dy", ".35em")
       .text(function(d) { return d.name });
 
-    node.exit().remove();
+    nodesEnter.each(function(d) {
+      var shape = d.shape;
+      if (shape) {
+        d3.select(this).append("svg:"+shape)
+          .attr("r", 10);
+      }
+    });
+
+    nodesData.exit().remove();
 
     this.force.start()
-  }
+  };
+
+  this.addNode = function(properties) {
+    var n = this.force.nodes().push(properties);
+    var node = this.force.nodes()[n-1];
+    this.update();
+    return node;
+  };
 }
