@@ -17,7 +17,6 @@ raphaelDiagram = function() {
 raphaelList = function(paper, props) {
   this.paper = paper;
   this.props =  props;
-  this.positions = [];
   this.items = [];
 
   this.create = function() {
@@ -31,15 +30,26 @@ raphaelList = function(paper, props) {
       this.props.y = 50;
   };
 
-  this.append = function(item) {
-    // Move the item to correct position in the list
-    var pos = (this.positions[this.positions.length-1] || 0)
-      + item.props.width/2 + this.props.padding;
-    item.set.animate({x: pos, y: this.props.y}, 500);
-
+  this.insert = function(item, index) {
+    var len = this.items.length;
+    // Make sure index is in bounds
+    if (index >= len)
+      var index = len-1;
+    else if (index < 0)
+      var index = len - (Math.abs(index) % len);
+    
     // Add the item to the list
-    this.positions.push(pos + item.props.width/2);
-    this.items.push(item);
+    this.items.splice(index,0,item);
+
+    // Update list
+    len = this.items.length;
+    var pos = 0; var item;
+    for(var i=0; i<len; i++) {
+      item = this.items[i];
+      pos += item.props.width/2;
+      item.set.animate({x: pos}, 500);
+      pos += item.props.width/2 + this.props.padding;
+    }
   };
 
   this.create();
