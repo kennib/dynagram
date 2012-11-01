@@ -6,7 +6,43 @@ raphaelDiagram = function() {
   this.createItem = function(properties) {
     var item = new raphaelItem(this.paper, properties);
     return item;
-  }
+  };
+
+  this.createList = function(properties, items) {
+    var list = new raphaelList(this.paper, properties);
+    return list;
+  };
+}
+
+raphaelList = function(paper, props) {
+  this.paper = paper;
+  this.props =  props;
+  this.positions = [];
+  this.items = [];
+
+  this.create = function() {
+    // Default settings
+    if (this.props.padding == undefined)
+      this.props.padding = 2;
+    
+    if (this.props.x == undefined)
+      this.props.x = 50;
+    if (this.props.y == undefined)
+      this.props.y = 50;
+  };
+
+  this.append = function(item) {
+    // Move the item to correct position in the list
+    var pos = (this.positions[this.positions.length-1] || 0)
+      + item.props.width/2 + this.props.padding;
+    item.set.animate({x: pos, y: this.props.y}, 500);
+
+    // Add the item to the list
+    this.positions.push(pos + item.props.width/2);
+    this.items.push(item);
+  };
+
+  this.create();
 }
 
 raphaelItem = function(paper, props) {
