@@ -3,8 +3,8 @@ raphaelDiagram = function() {
     this.paper = Raphael(10, 50, 500, 350);
   };
   
-  this.addItem = function(properties) {
-    item = new raphaelItem(this.paper, properties);
+  this.createItem = function(properties) {
+    var item = new raphaelItem(this.paper, properties);
     return item;
   }
 }
@@ -52,11 +52,12 @@ raphaelItem = function(paper, props) {
     if (this.props.shape) {
       var s = this.props.shape;
       if (s == 'circle') {
-        this.paper.circle(this.props.x, this.props.y, this.props.radius);
+        this.shape = this.paper.circle(this.props.x, this.props.y, this.props.radius);
       } else if (s == 'rect') {
-        this.paper.rect(this.props.x - this.props.width/2,
-          this.props.y - this.props.height/2,
-          this.props.width, this.props.height);
+        this.shape = this.paper.rect(this.props.x,this.props.y,
+          this.props.width, this.props.height)
+          .transform("T"+(-this.props.width/2)+
+            ","+(-this.props.height/2));
       }
     }
     this.set = this.paper.setFinish();
