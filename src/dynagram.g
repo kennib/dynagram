@@ -5,6 +5,7 @@ options {
 }
 
 tokens {
+  LIST;
   ACTION;
   INSERT;
   REMOVE;
@@ -29,9 +30,10 @@ action:
 ;
 
 list_action:
-    INSERT_KW item INSERT_PREP list (INSERT_POS_PREP ID)?   -> ^(INSERT list item ID)
-  | REMOVE_KW item REMOVE_PREP list                         -> ^(REMOVE list item)
-  | REVERSE_KW list                                         -> ^(REVERSE list)
+    LIST_KW list LIST_PREP items+=item (LIST_SEP items+=item)*   -> ^(LIST list $items)
+  | INSERT_KW item INSERT_PREP list (INSERT_POS_PREP ID)?        -> ^(INSERT list item ID)
+  | REMOVE_KW item REMOVE_PREP list                              -> ^(REMOVE list item)
+  | REVERSE_KW list                                              -> ^(REVERSE list)
 ;
 
 item_action:
@@ -53,6 +55,12 @@ val: NUM|STRING;
 EOL                 : '.' ;
 LIST_SEP            : ',' ;
 
+DEFINE_KW           : 'define' ;
+DEFINE_PREP         : 'with' ;
+
+LIST_KW             : 'list';
+LIST_PREP           : 'contains' ;
+
 INSERT_KW           : 'insert' ;
 INSERT_PREP         : 'into' ;
 INSERT_POS_PREP     : 'at' ;
@@ -60,8 +68,6 @@ REMOVE_KW           : 'remove' ;
 REMOVE_PREP         : 'from' ;
 REVERSE_KW          : 'reverse' ;
 
-DEFINE_KW           : 'define' ;
-DEFINE_PREP         : 'with' ;
 OPTION_PREP         : 'as'|;
 
 ID                  : ('a'..'z'|'A'..'Z') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')* ;
