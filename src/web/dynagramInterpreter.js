@@ -42,11 +42,12 @@ dynagramInterpreter = function(display) {
         var listName = tree.children[0].getText();
 
         // Get list items
-        var listItems
-        var items= tree.children[1];
+        var listItems = [];
+        var items = tree.children[1].children;
         if (items) {
-          for (var i=0; i<items.length; l++) {
-            var item  = items[p].children[0].getText();
+          for (var i=0; i<items.length; i++) {
+            var item  = items[i].getText();
+            item = this.getItem(item);
             listItems.push(item);
           }
         }
@@ -57,6 +58,15 @@ dynagramInterpreter = function(display) {
         // Create list
         this.lists[listName] = this.display.createList(listProps, listItems);
         break;
+    }
+  }
+
+  this.getItem = function(itemName) {
+    if (this.items[itemName]) {
+      return this.items[itemName];
+    } else {
+      var itemProps = {label: itemName, shape:"rect"};
+      return this.display.createItem(itemProps);
     }
   }
 };

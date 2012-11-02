@@ -6,6 +6,7 @@ options {
 
 tokens {
   LIST;
+  ITEMS;
   ACTION;
   INSERT;
   REMOVE;
@@ -30,7 +31,7 @@ action:
 ;
 
 list_action:
-    LIST_KW list LIST_PREP items+=item (LIST_SEP items+=item)*   -> ^(LIST list $items)
+    LIST_KW list LIST_PREP item (LIST_SEP item)*                 -> ^(LIST list ^(ITEMS item*))
   | INSERT_KW item INSERT_PREP list (INSERT_POS_PREP ID)?        -> ^(INSERT list item ID)
   | REMOVE_KW item REMOVE_PREP list                              -> ^(REMOVE list item)
   | REVERSE_KW list                                              -> ^(REVERSE list)
