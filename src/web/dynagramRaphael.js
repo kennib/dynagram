@@ -51,6 +51,12 @@ raphaelList = function(paper, props) {
 
     this.update();
   };
+
+  this.reverse = function() {
+    this.items.reverse();
+
+    this.update();
+  };
    
   this.update = function() {
     // Update list
