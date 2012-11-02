@@ -64,6 +64,6 @@ DEFINE_KW           : 'define' ;
 DEFINE_PREP         : 'with' ;
 OPTION_PREP         : 'as'|;
 
-ID                  : 'a'..'z'+ ;
+ID                  : ('a'..'z'|'A'..'Z') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')* ;
 NUM                 : '0'..'9'+ ;
 WS : (' '|'\t'|'\r'|'\n')+ {$channel=HIDDEN;} ;
