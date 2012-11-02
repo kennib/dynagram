@@ -92,9 +92,10 @@ raphaelItem = function(paper, props) {
     if (this.props.y == undefined)
       this.props.y = 50;
 
+    // Create set of elements
+    this.paper.setStart();
     
     // Create text element
-    paper.setStart();
     if (this.props.label) {
       this.label = this.paper.text(this.props.x, this.props.y, this.props.label)
         .attr('font', height+' '+font);
@@ -123,7 +124,12 @@ raphaelItem = function(paper, props) {
           .transform("T"+(-this.props.width/2)+
             ","+(-this.props.height/2));
       }
+      //Apply attributes
+      if (this.shape)
+        this.shape.attr(this.props);
     }
+
+    // Create set of elements
     this.set = this.paper.setFinish();
   };
 
