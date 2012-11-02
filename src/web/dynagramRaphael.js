@@ -131,6 +131,10 @@ raphaelItem = function(paper, props) {
 
     // Create set of elements
     this.set = this.paper.setFinish();
+
+    // Make sure label is visible
+    if (this.label)
+      this.label.toFront();
   };
 
   this.create();
