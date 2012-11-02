@@ -1,6 +1,7 @@
 dynagramInterpreter = function(display) {
   this.display = display;
   this.items = {};
+  this.lists = {};
 
   this.eval = function(input) {
     var cstream = new org.antlr.runtime.ANTLRStringStream(input);
@@ -10,6 +11,7 @@ dynagramInterpreter = function(display) {
     var tree = parser.diagram().tree;
 
     this.eval_tree(tree);
+    return tree;
   };
 
   this.eval_tree = function(tree) {
@@ -34,6 +36,26 @@ dynagramInterpreter = function(display) {
 
         // Create item
         this.items[itemName] = this.display.createItem(itemProps);
+        break;
+
+      case "LIST":
+        var listName = tree.children[0].getText();
+
+        // Get list items
+        var listItems
+        var items= tree.children[1];
+        if (items) {
+          for (var i=0; i<items.length; l++) {
+            var item  = items[p].children[0].getText();
+            listItems.push(item);
+          }
+        }
+
+        // Construct properties
+        var listProps = {};
+
+        // Create list
+        this.lists[listName] = this.display.createList(listProps, listItems);
         break;
     }
   }
