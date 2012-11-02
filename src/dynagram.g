@@ -10,6 +10,8 @@ tokens {
   REMOVE;
   REVERSE;
   DEFINE;
+  OPTIONS;
+  OPTION;
   ID;
 }
 
@@ -33,10 +35,11 @@ list_action:
 ;
 
 item_action:
-    DEFINE_KW item (DEFINE_PREP option (LIST_SEP option)*)? -> ^(DEFINE item option*)
+    DEFINE_KW item (DEFINE_PREP option (LIST_SEP option)*)? -> ^(DEFINE item ^(OPTIONS option*))
 ;
 
 option:
+    opt OPTION_PREP val -> ^(OPTION opt val)
 ;
 
 /*****************************
@@ -44,6 +47,8 @@ option:
 ******************************/
 item: ID;
 list: ID;
+opt: ID;
+val: ID|NUM;
 
 EOL                 : '.' ;
 LIST_SEP            : ',' ;
@@ -56,7 +61,8 @@ REMOVE_PREP         : 'from' ;
 REVERSE_KW          : 'reverse' ;
 
 DEFINE_KW           : 'define' ;
-DEFINE_PREP         : 'as' ;
+DEFINE_PREP         : 'with' ;
+OPTION_PREP         : 'as'|;
 
 ID                  : 'a'..'z'+ ;
 NUM                 : '0'..'9'+ ;

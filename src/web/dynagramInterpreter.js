@@ -1,5 +1,7 @@
-dynagramInterpreter = function(diagram) {
-  this.diagram = diagram;
+dynagramInterpreter = function(display) {
+  this.display = display;
+  this.items = {};
+
   this.eval = function(input) {
     var cstream = new org.antlr.runtime.ANTLRStringStream(input);
     var lexer = new dynagramLexer(cstream);
@@ -11,6 +13,28 @@ dynagramInterpreter = function(diagram) {
   };
 
   this.eval_tree = function(tree) {
-    console.log(tree);
+    switch(tree.token.text) {
+      case "ACTION":
+        this.eval_tree(tree.children[0]);
+        break;
+
+      case "DEFINE":
+        var itemName = tree.children[0].getText();
+        
+        // Construct properties
+        var itemProps = {label: itemName, shape:"rect"};
+        var props = tree.children[1].children;
+        if (props) {
+          for (var p=0; p<props.length; p++) {
+            var prop = props[p].children[0].getText();
+            var val = props[p].children[1].getText();
+            itemProps[prop] = val;
+          }
+        }
+
+        // Create item
+        this.items[itemName] = this.display.createItem(itemProps);
+        break;
+    }
   }
 };
