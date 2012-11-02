@@ -47,8 +47,8 @@ option:
 ******************************/
 item: ID;
 list: ID;
-opt: ID;
-val: ID|NUM;
+opt: ID|STRING;
+val: NUM|STRING;
 
 EOL                 : '.' ;
 LIST_SEP            : ',' ;
@@ -66,4 +66,14 @@ OPTION_PREP         : 'as'|;
 
 ID                  : ('a'..'z'|'A'..'Z') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')* ;
 NUM                 : '0'..'9'+ ;
+
+ESC_CHAR            : '\\' . ;
+STRING:
+   ('"'  (ESC_CHAR | ~('"' |'\\'|'\n'))* '"'
+  | '\'' (ESC_CHAR | ~('\''|'\\'|'\n'))* '\'')
+  // Remove quotes
+  {this.setText(this.getText().substring(1, this.getText().length-1));}
+; 
+
+
 WS : (' '|'\t'|'\r'|'\n')+ {$channel=HIDDEN;} ;
