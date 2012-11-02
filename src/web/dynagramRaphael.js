@@ -10,6 +10,13 @@ raphaelDiagram = function() {
 
   this.createList = function(properties, items) {
     var list = new raphaelList(this.paper, properties);
+    
+    // Add the items to the list
+    if (items) {
+      for (var i=0; i<items.length; i++)
+        list.insert(items[i]);
+    }
+
     return list;
   };
 }
@@ -33,8 +40,10 @@ raphaelList = function(paper, props) {
   this.insert = function(item, index) {
     var len = this.items.length;
     // Make sure index is in bounds
-    if (index >= len)
-      var index = len-1;
+    if (index == undefined)
+      var index = len;
+    else if (index > len)
+      var index = len;
     else if (index < 0)
       var index = len - (Math.abs(index) % len);
     
