@@ -41,8 +41,20 @@ raphaelList = function(paper, props) {
     // Add the item to the list
     this.items.splice(index,0,item);
 
+    this.update();
+  };
+
+  this.remove = function(item) {
+    var index = this.items.indexOf(item);
+    if (index != -1)
+      this.items.splice(index, 1);
+
+    this.update();
+  };
+   
+  this.update = function() {
     // Update list
-    len = this.items.length;
+    var len = this.items.length;
     var pos = 0; var item;
     for(var i=0; i<len; i++) {
       item = this.items[i];
