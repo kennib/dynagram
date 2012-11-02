@@ -21,6 +21,11 @@ raphaelDiagram = function() {
   };
 }
 
+var raphaelDefaults = {
+    x: 0, y:10,
+    height: 20,
+};
+
 raphaelList = function(paper, props) {
   this.paper = paper;
   this.props =  props;
@@ -32,9 +37,12 @@ raphaelList = function(paper, props) {
       this.props.padding = 2;
     
     if (this.props.x == undefined)
-      this.props.x = 50;
+      this.props.x = raphaelDefaults.x;
     if (this.props.y == undefined)
-      this.props.y = 50;
+      this.props.y = raphaelDefaults.y;
+    
+    // Get next default positions
+    raphaelDefaults.y += raphaelDefaults.height;
   };
 
   this.insert = function(item, index) {
@@ -74,7 +82,7 @@ raphaelList = function(paper, props) {
     for(var i=0; i<len; i++) {
       item = this.items[i];
       pos += item.props.width/2;
-      item.set.animate({x: pos}, 500);
+      item.set.animate({x: pos, y: this.props.y}, 500);
       pos += item.props.width/2 + this.props.padding;
     }
   };
@@ -97,9 +105,9 @@ raphaelItem = function(paper, props) {
 
     // Set default position
     if (this.props.x == undefined)
-      this.props.x = 50;
+      this.props.x = raphaelDefaults.x;
     if (this.props.y == undefined)
-      this.props.y = 50;
+      this.props.y = raphaelDefaults.y;
 
     // Create set of elements
     this.paper.setStart();
@@ -133,7 +141,8 @@ raphaelItem = function(paper, props) {
           .transform("T"+(-this.props.width/2)+
             ","+(-this.props.height/2));
       }
-      //Apply attributes
+
+      // Apply attributes
       if (this.shape)
         this.shape.attr(this.props);
     }
@@ -144,6 +153,9 @@ raphaelItem = function(paper, props) {
     // Make sure label is visible
     if (this.label)
       this.label.toFront();
+    
+    // Get next default positions
+    raphaelDefaults.y = this.set.getBBox().y2;
   };
 
   this.create();
