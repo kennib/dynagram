@@ -66,7 +66,9 @@ dynagramInterpreter = function(display) {
       return this.items[itemName];
     } else {
       var itemProps = {label: itemName, shape:"rect"};
-      return this.display.createItem(itemProps);
+      var item = this.display.createItem(itemProps);
+      this.items[itemName] = item;
+      return item;
     }
   }
 };
