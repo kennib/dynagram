@@ -5,6 +5,7 @@ options {
 }
 
 tokens {
+  STATE;
   LIST;
   ITEMS;
   ACTION;
@@ -26,13 +27,18 @@ diagram:
 * Actions
 ******************************/
 action:
-    list_action
+    state_action
+  | list_action
   | item_action
+;
+
+state_action:
+    STATE_KW s? -> ^(STATE s?)
 ;
 
 list_action:
     LIST_KW list LIST_PREP item (LIST_SEP item)*                 -> ^(LIST list ^(ITEMS item*))
-  | INSERT_KW item INSERT_PREP list (INSERT_POS_PREP NUM)?        -> ^(INSERT list item NUM?)
+  | INSERT_KW item INSERT_PREP list (INSERT_POS_PREP NUM)?       -> ^(INSERT list item NUM?)
   | REMOVE_KW item REMOVE_PREP list                              -> ^(REMOVE list item)
   | REVERSE_KW list                                              -> ^(REVERSE list)
 ;
@@ -48,13 +54,16 @@ option:
 /*****************************
 * Literals
 ******************************/
-item: ID;
+s: ID;
 list: ID;
+item: ID;
 opt: ID|STRING;
 val: NUM|STRING;
 
 EOL                 : '.' ;
 LIST_SEP            : ',' ;
+
+STATE_KW            : 'state';
 
 DEFINE_KW           : 'define' ;
 DEFINE_PREP         : 'with' ;
