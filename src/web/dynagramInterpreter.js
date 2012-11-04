@@ -58,6 +58,21 @@ dynagramInterpreter = function(display) {
         // Create list
         this.lists[listName] = this.display.createList(listProps, listItems);
         break;
+
+      case "INSERT":
+        // Get list
+        var listName = tree.children[0].getText();
+        var list = this.getList(listName);
+
+        // Get item
+        var itemName = items[i].getText();
+        var item = this.getItem(itemName);
+
+        // Get index
+        var index = undefined;
+
+        // Insert item into list
+        list.insert(item, index);
     }
   }
 
@@ -73,7 +88,7 @@ dynagramInterpreter = function(display) {
   }
 
   this.getList = function(listName) {
-    if (this.listss[listName]) {
+    if (this.lists[listName]) {
       return this.lists[listName];
     } else {
       var listProps = {};
