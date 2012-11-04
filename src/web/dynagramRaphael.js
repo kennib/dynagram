@@ -19,11 +19,45 @@ raphaelDiagram = function() {
 
     return list;
   };
+
+  this.createState = function() {
+    state = new raphaelState(this.paper);
+    return state;
+  };
 }
 
 var raphaelDefaults = {
     x: 0, y:10,
     height: 20,
+};
+
+raphaelState = function(paper) {
+  this.paper = paper;
+  this.attrs = {};
+
+  this.create = function() {
+    // Store element attributes
+    var self = this;
+    this.paper.forEach(function(el) {
+      self.attrs[el.id] = el.attr();
+    });
+  };
+
+  this.load = function () {
+    // Load element attributes
+    var self = this;
+    this.paper.forEach(function(el) {
+      var oldState = self.attrs[el.id];
+      if (oldState) {
+        el.show();
+        el.animate(oldState, 500);
+      } else {
+        el.hide();
+      }
+    });
+  };
+
+  this.create();
 };
 
 raphaelList = function(paper, props) {
@@ -82,7 +116,7 @@ raphaelList = function(paper, props) {
     for(var i=0; i<len; i++) {
       item = this.items[i];
       pos += item.props.width/2;
-      item.set.animate({x: pos, y: this.props.y}, 500);
+      item.set.attr({x: pos, y: this.props.y});
       pos += item.props.width/2 + this.props.padding;
     }
   };
