@@ -17,7 +17,8 @@ dynagramInterpreter = function(display) {
   this.eval_tree = function(tree) {
     switch(tree.token.text) {
       case "ACTION":
-        this.eval_tree(tree.children[0]);
+        for (var c=0; c<tree.children.length; c++)
+          this.eval_tree(tree.children[c]);
         break;
 
       case "DEFINE":

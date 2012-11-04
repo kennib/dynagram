@@ -18,7 +18,7 @@ tokens {
 }
 
 diagram:
-    (action EOL)* -> ^(ACTION action) 
+   (action EOL)* -> ^(ACTION action*)
 ;
 
 
