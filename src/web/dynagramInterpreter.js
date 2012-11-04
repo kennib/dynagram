@@ -71,4 +71,17 @@ dynagramInterpreter = function(display) {
       return item;
     }
   }
+
+  this.getList = function(listName) {
+    if (this.listss[listName]) {
+      return this.lists[listName];
+    } else {
+      var listProps = {};
+      var listItems = [];
+      var list = this.display.createItem(listProps, listItems);
+      this.lists[listName] = list;
+      return list;
+    }
+  }
+
 };
