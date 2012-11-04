@@ -74,6 +74,16 @@ dynagramInterpreter = function(display) {
 
         // Insert item into list
         list.insert(item, index);
+        break;
+
+      case "REVERSE":
+        // Get list
+        var listName = tree.children[0].getText();
+        var list = this.getList(listName);
+
+        // Reverse list
+        list.reverse();
+        break;
     }
   }
 
