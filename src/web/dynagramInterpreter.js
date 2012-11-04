@@ -2,6 +2,7 @@ dynagramInterpreter = function(display) {
   this.display = display;
   this.items = {};
   this.lists = {};
+  this.states = {};
 
   this.eval = function(input) {
     var cstream = new org.antlr.runtime.ANTLRStringStream(input);
@@ -19,6 +20,16 @@ dynagramInterpreter = function(display) {
       case "ACTION":
         for (var c=0; c<tree.children.length; c++)
           this.eval_tree(tree.children[c]);
+        break;
+
+      case "STATE":
+        if (tree.children[0])
+          var stateName = tree.children[0].getText();
+        else
+          var stateName = "<un-named "+this.states.length+">";
+
+        // Create the state
+        this.getState(stateName);
         break;
 
       case "DEFINE":
@@ -88,6 +99,16 @@ dynagramInterpreter = function(display) {
     }
   }
 
+  this.getState = function(stateName) {
+    if (this.states[stateName]) {
+      return this.states[stateName]; 
+    } else {
+      var state = this.display.createState();
+      this.states[stateName] = state;
+      return state;
+    }
+  };
+
   this.getItem = function(itemName) {
     if (this.items[itemName]) {
       return this.items[itemName];
@@ -97,7 +118,7 @@ dynagramInterpreter = function(display) {
       this.items[itemName] = item;
       return item;
     }
-  }
+  };
 
   this.getList = function(listName) {
     if (this.lists[listName]) {
@@ -109,6 +130,6 @@ dynagramInterpreter = function(display) {
       this.lists[listName] = list;
       return list;
     }
-  }
+  };
 
 };
