@@ -65,11 +65,12 @@ dynagramInterpreter = function(display) {
         var list = this.getList(listName);
 
         // Get item
-        var itemName = items[i].getText();
+        var itemName = tree.children[1].getText();
         var item = this.getItem(itemName);
 
         // Get index
-        var index = undefined;
+        if (tree.children[2])
+          var index = tree.children[2].getText();
 
         // Insert item into list
         list.insert(item, index);

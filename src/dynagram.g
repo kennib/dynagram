@@ -32,7 +32,7 @@ action:
 
 list_action:
     LIST_KW list LIST_PREP item (LIST_SEP item)*                 -> ^(LIST list ^(ITEMS item*))
-  | INSERT_KW item INSERT_PREP list (INSERT_POS_PREP ID)?        -> ^(INSERT list item ID?)
+  | INSERT_KW item INSERT_PREP list (INSERT_POS_PREP NUM)?        -> ^(INSERT list item NUM?)
   | REMOVE_KW item REMOVE_PREP list                              -> ^(REMOVE list item)
   | REVERSE_KW list                                              -> ^(REVERSE list)
 ;
