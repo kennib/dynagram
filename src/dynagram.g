@@ -40,7 +40,7 @@ control_flow:
 ;
 
 for_loop:
-  FOR_LOOP_KW item FOR_LOOP_PREP list EOC action (EOSS action)*  -> ^(FOR_LOOP item list ^(ACTIONS action*))
+  FOR_LOOP_KW item FOR_LOOP_PREP list EOC action (EOSS action)*  -> ^(FOR_LOOP item list ^(ACTIONS action+))
 ;
 
 
