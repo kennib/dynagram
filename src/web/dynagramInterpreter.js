@@ -103,7 +103,7 @@ dynagramInterpreter = function(display) {
     if (this.states[stateName]) {
       return this.states[stateName]; 
     } else {
-      var state = this.display.createState();
+      var state = this.display.createState(stateName);
       this.states[stateName] = state;
       return state;
     }
