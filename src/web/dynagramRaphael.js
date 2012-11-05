@@ -1,6 +1,10 @@
 raphaelDiagram = function() {
   this.init = function() {
-    this.paper = Raphael(10, 50, 500, 350);
+    var width = 500, height = 350;
+    var top = 10, left = 10;
+
+    this.paper = Raphael(left, top, width, height);
+    this.controls = Raphael(left+width, top, width/3, height);
   };
   
   this.createItem = function(properties) {
@@ -21,7 +25,7 @@ raphaelDiagram = function() {
   };
 
   this.createState = function() {
-    state = new raphaelState(this.paper);
+    state = new raphaelState(this.paper, this.controls);
     return state;
   };
 }
@@ -31,8 +35,9 @@ var raphaelDefaults = {
     height: 20,
 };
 
-raphaelState = function(paper) {
+raphaelState = function(paper, controls) {
   this.paper = paper;
+  this.controls = controls;
   this.attrs = {};
 
   this.create = function() {
