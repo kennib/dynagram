@@ -102,8 +102,10 @@ dynagramInterpreter = function(display) {
 
       default:
         // Evaluate each child operation
-        for (var c=0; c<tree.children.length; c++)
-          this.eval_tree(tree.children[c]);
+        if (tree.children) {
+          for (var c=0; c<tree.children.length; c++)
+            this.eval_tree(tree.children[c]);
+        }
     }
   }
 
