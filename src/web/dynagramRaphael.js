@@ -3,8 +3,19 @@ raphaelDiagram = function() {
     var width = 500, height = 350;
     var top = 10, left = 10;
 
+    // Create canvas
     this.paper = Raphael(left, top, width, height);
-    this.controls = Raphael(left+width, top, width/3, height);
+
+    // Create UI
+    this.controls = $('<div></div>').insertAfter(this.paper.canvas);
+    // Place UI next to the canvas
+    this.controls.css({
+      position: 'absolute',
+      top: top,
+      left: left+width,
+      width: width/3,
+      height: height,
+    });
   };
   
   this.createItem = function(properties) {
