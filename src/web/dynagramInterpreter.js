@@ -134,7 +134,7 @@ dynagramInterpreter = function(display) {
     } else {
       var listProps = {};
       var listItems = [];
-      var list = this.display.createItem(listProps, listItems);
+      var list = this.display.createList(listProps, listItems);
       this.lists[listName] = list;
       return list;
     }
