@@ -45,6 +45,11 @@ raphaelDiagram = function() {
     var stateUI = $('<li>'+name+'</li>');
     this.controls.states.append(stateUI);
 
+    // State UI loads the state on click
+    stateUI.click(function() {
+      state.load();
+    });
+
     return state;
   };
 }
