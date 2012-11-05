@@ -7,7 +7,7 @@ raphaelDiagram = function() {
     this.paper = Raphael(left, top, width, height);
 
     // Create UI
-    this.controls = $('<div></div>').insertAfter(this.paper.canvas);
+    this.controls = $('<div class="dynagramUI"></div>').insertAfter(this.paper.canvas);
     // Place UI next to the canvas
     this.controls.css({
       position: 'absolute',
@@ -16,6 +16,9 @@ raphaelDiagram = function() {
       width: width/3,
       height: height,
     });
+    // Create list for states
+    this.controls.states = $('<ul class="dynagramUI-states"></ul>');
+    this.controls.append(this.controls.states);
   };
   
   this.createItem = function(properties) {
@@ -35,8 +38,13 @@ raphaelDiagram = function() {
     return list;
   };
 
-  this.createState = function() {
-    state = new raphaelState(this.paper, this.controls);
+  this.createState = function(name) {
+    var state = new raphaelState(this.paper);
+
+    // Add state to state list in the UI
+    var stateUI = $('<li>'+name+'</li>');
+    this.controls.states.append(stateUI);
+
     return state;
   };
 }
@@ -46,9 +54,8 @@ var raphaelDefaults = {
     height: 20,
 };
 
-raphaelState = function(paper, controls) {
+raphaelState = function(paper) {
   this.paper = paper;
-  this.controls = controls;
   this.attrs = {};
 
   this.create = function() {
