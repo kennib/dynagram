@@ -5,6 +5,8 @@ raphaelDiagram = function() {
 
     // Create canvas
     this.paper = Raphael(left, top, width, height);
+    // Next default placement for an item
+    this.nextPos = {x:10, y:10}
 
     // Create UI
     this.controls = $('<div class="dynagramUI"></div>').insertAfter(this.paper.canvas);
@@ -22,12 +24,12 @@ raphaelDiagram = function() {
   };
   
   this.createItem = function(properties) {
-    var item = new raphaelItem(this.paper, properties);
+    var item = new raphaelItem(this, properties);
     return item;
   };
 
   this.createList = function(properties, items) {
-    var list = new raphaelList(this.paper, properties);
+    var list = new raphaelList(this, properties);
     
     // Add the items to the list
     if (items) {
@@ -39,7 +41,7 @@ raphaelDiagram = function() {
   };
 
   this.createState = function(name) {
-    var state = new raphaelState(this.paper);
+    var state = new raphaelState(this);
 
     // Add state to state list in the UI
     var stateUI = $('<li>'+name+'</li>');
@@ -54,13 +56,9 @@ raphaelDiagram = function() {
   };
 }
 
-var raphaelDefaults = {
-    x: 0, y:10,
-    height: 20,
-};
-
-raphaelState = function(paper) {
-  this.paper = paper;
+raphaelState = function(diagram) {
+  this.diagram = diagram
+  this.paper = diagram.paper;
   this.attrs = {};
 
   this.create = function() {
@@ -88,23 +86,26 @@ raphaelState = function(paper) {
   this.create();
 };
 
-raphaelList = function(paper, props) {
-  this.paper = paper;
-  this.props =  props;
+raphaelList = function(diagram, props) {
+  // Default properties
+  var listProps = {
+    x: diagram.nextPos.x, y: diagram.nextPos.y,
+    height: 20,
+    padding: 4,
+  };
+  this.listProps = listProps;
+  
+  // Set properties
+  for (var prop in props)
+    listProps[prop] = listProps[prop];
+
+  this.diagram = diagram;
+  this.paper = diagram.paper;
   this.items = [];
 
   this.create = function() {
-    // Default settings
-    if (this.props.padding == undefined)
-      this.props.padding = 2;
-    
-    if (this.props.x == undefined)
-      this.props.x = raphaelDefaults.x;
-    if (this.props.y == undefined)
-      this.props.y = raphaelDefaults.y;
-    
-    // Get next default positions
-    raphaelDefaults.y += raphaelDefaults.height;
+    // Update next diagram position
+    diagram.nextPos = {x: listProps.x, y: listProps.y+listProps.height};
   };
 
   this.insert = function(item, index) {
@@ -143,70 +144,71 @@ raphaelList = function(paper, props) {
     var pos = 0; var item;
     for(var i=0; i<len; i++) {
       item = this.items[i];
-      pos += item.props.width/2;
-      item.set.attr({x: pos, y: this.props.y});
-      pos += item.props.width/2 + this.props.padding;
+      pos += item.shapeProps.width/2;
+      item.set.attr({x: pos, y: listProps.y});
+      pos += item.shapeProps.width/2 + listProps.padding;
     }
   };
 
   this.create();
 }
 
-raphaelItem = function(paper, props) {
-  this.paper = paper;
-  this.props =  props;
+
+raphaelItem = function(diagram, props) {
+  // Default properties
+  var textProps = {
+    x: diagram.nextPos.x, y: diagram.nextPos.y,
+    height: 16,
+    font: 'arial',
+  };
+  this.textProps = textProps;
+  var shapeProps = {
+    x: diagram.nextPos.x, y: diagram.nextPos.y,
+    height: 20, width: 40,
+    padding: 4,
+    fill: 'white',
+  };
+  this.shapeProps = shapeProps;
+
+  // Set properties
+  for (var prop in props)
+    textProps[prop] = props[prop];
+  for (var prop in props)
+    shapeProps[prop] = props[prop];
+
+  this.diagram = diagram;
+  this.paper = diagram.paper;
 
   this.create = function() {
-    // Defaults
-    this.label = null;
-    this.shape = null;
-    var width = 25;
-    var height = 15;
-    var padding = 4;
-    var font = "Arial";
-
-    // Set default position
-    if (this.props.x == undefined)
-      this.props.x = raphaelDefaults.x;
-    if (this.props.y == undefined)
-      this.props.y = raphaelDefaults.y;
-
     // Create set of elements
     this.paper.setStart();
     
     // Create text element
-    if (this.props.label) {
-      this.label = this.paper.text(this.props.x, this.props.y, this.props.label)
-        .attr('font', height+' '+font);
-      width = this.label.node.getComputedTextLength();
+    if (textProps.label) {
+      this.label = this.paper.text(textProps.x, textProps.y, textProps.label)
+        .attr(textProps)
+        .attr('font', textProps.height+' '+textProps.font);
+      shapeProps.width = this.label.node.getComputedTextLength() + shapeProps.padding;
     }
     
-    // Set default size
-    if (this.props.shape != 'circle') {
-      if (this.props.width == undefined)
-        this.props.width = width+padding;
-      if (this.props.height == undefined)
-        this.props.height = height+padding;
-    }
-
-    if (this.props.shape == 'circle' && this.props.radius == undefined)
-      this.props.radius = width;
+    if (shapeProps.shape == 'circle' && shapeProps.radius == undefined)
+      shapeProps.radius = width;
 
     // Create shape element
-    if (this.props.shape) {
-      var s = this.props.shape;
+    if (shapeProps.shape) {
+      var s = shapeProps.shape;
       if (s == 'circle') {
-        this.shape = this.paper.circle(this.props.x, this.props.y, this.props.radius);
+        this.shape = this.paper.circle(shapeProps.x, shapeProps.y, shapeProps.radius);
       } else if (s == 'rect') {
-        this.shape = this.paper.rect(this.props.x,this.props.y,
-          this.props.width, this.props.height)
-          .transform("T"+(-this.props.width/2)+
-            ","+(-this.props.height/2));
+        this.shape = this.paper.rect(shapeProps.x, shapeProps.y,
+          shapeProps.width, shapeProps.height)
+          .transform("T"+(-shapeProps.width/2)+
+            ","+(-shapeProps.height/2));
       }
 
       // Apply attributes
       if (this.shape)
-        this.shape.attr(this.props);
+        this.shape.attr(shapeProps);
     }
 
     // Create set of elements
@@ -216,8 +218,9 @@ raphaelItem = function(paper, props) {
     if (this.label)
       this.label.toFront();
     
-    // Get next default positions
-    raphaelDefaults.y = this.set.getBBox().y2;
+    // Update next diagram position
+    var bbox =  this.set.getBBox();
+    diagram.nextPos = {x: bbox.x, y: bbox.y2};
   };
 
   this.create();
