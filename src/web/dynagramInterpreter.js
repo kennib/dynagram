@@ -16,10 +16,13 @@ dynagramInterpreter = function(display) {
   };
 
   this.eval_tree = function(tree) {
-    switch(tree.token.text) {
+    var operation = null;
+    if (tree.token)
+      operation = tree.token.text;
+
+    switch(operation) {
       case "ACTION":
-        for (var c=0; c<tree.children.length; c++)
-          this.eval_tree(tree.children[c]);
+        this.eval_tree(tree.children[0]);
         break;
 
       case "STATE":
@@ -96,6 +99,11 @@ dynagramInterpreter = function(display) {
         // Reverse list
         list.reverse();
         break;
+
+      default:
+        // Evaluate each child operation
+        for (var c=0; c<tree.children.length; c++)
+          this.eval_tree(tree.children[c]);
     }
   }
 

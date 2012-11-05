@@ -5,13 +5,18 @@ options {
 }
 
 tokens {
+  FOR_LOOP;
+  ACTIONS;
+  ACTION;
+
   STATE;
   LIST;
   ITEMS;
-  ACTION;
+
   INSERT;
   REMOVE;
   REVERSE;
+
   DEFINE;
   OPTIONS;
   OPTION;
@@ -19,7 +24,15 @@ tokens {
 }
 
 diagram:
-   (action EOL)* -> ^(ACTION action*)
+  (for_loop | action)*
+;
+
+/*****************************
+* Control Flow
+******************************/
+
+for_loop:
+  FOR_LOOP_KW item FOR_LOOP_PREP list EOC action* '?' -> ^(FOR_LOOP item list ^(ACTIONS action*))
 ;
 
 
@@ -27,6 +40,10 @@ diagram:
 * Actions
 ******************************/
 action:
+   (action_type EOL) -> ^(ACTION action_type)
+;
+
+action_type:
     state_action
   | list_action
   | item_action
@@ -61,7 +78,11 @@ opt: ID|STRING;
 val: NUM|STRING;
 
 EOL                 : '.' ;
+EOC                 : ':' ;
 LIST_SEP            : ',' ;
+
+FOR_LOOP_KW         : 'for' ;
+FOR_LOOP_PREP       : 'in' ;
 
 STATE_KW            : 'state';
 
