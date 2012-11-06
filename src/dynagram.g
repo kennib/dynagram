@@ -5,22 +5,11 @@ options {
 }
 
 tokens {
-  FOR_LOOP;
-  ACTIONS;
+  SENTENCE;
+  CONDITION;
   ACTION;
-
-  STATE;
-  LIST;
-  ITEMS;
-
-  INSERT;
-  REMOVE;
-  REVERSE;
-
-  DEFINE;
-  OPTIONS;
-  OPTION;
-  ID;
+  ATTRIBUTE;
+  TYPE;
 }
 
 diagram:
@@ -28,98 +17,83 @@ diagram:
 ;
 
 sentence:
-  (control_flow | action)
+  (conditional THEN)? action -> ^(SENTENCE conditional? action)
 ;
+
 
 /*****************************
-* Control Flow
+* Conditionals
 ******************************/
 
-control_flow:
-    for_loop 
-;
-
-for_loop:
-  FOR_LOOP_KW item FOR_LOOP_PREP list EOC action (EOSS action)*  -> ^(FOR_LOOP item list ^(ACTIONS action+))
+conditional:
+  IF condition=(action|attribute) -> ^(CONDITION $condition)
 ;
 
 
 /*****************************
 * Actions
 ******************************/
+
 action:
-   action_type                                                   -> ^(ACTION action_type)
+    general_action
+  | define
 ;
 
-action_type:
-    state_action
-  | list_action
-  | item_action
+general_action:
+    '(' act=verb subject=(general_action|noun) (PREPOSITION object+=(general_action|noun) (AND object+=(general_action|noun))*)? ')'
+    -> ^(ACTION $act $subject? $object*)
 ;
 
-state_action:
-    STATE_KW s?                                                  -> ^(STATE s?)
+define:
+    act=DEFINE_KW subject=(action|attribute) AS object=(sentence|type)    -> ^(ACTION $act $subject? $object?)
 ;
 
-list_action:
-    LIST_KW list LIST_PREP item (LIST_SEP item)*                 -> ^(LIST list ^(ITEMS item*))
-  | INSERT_KW item INSERT_PREP list (INSERT_POS_PREP NUM)?       -> ^(INSERT list item NUM?)
-  | REMOVE_KW item REMOVE_PREP list                              -> ^(REMOVE list item)
-  | REVERSE_KW list                                              -> ^(REVERSE list)
+
+/*****************************
+* Attributes
+******************************/
+
+attribute:
+    attr=noun (PREPOSITION object+=noun (AND object+=noun)*)? -> ^(ATTRIBUTE $attr $object*)
 ;
 
-item_action:
-    DEFINE_KW item (DEFINE_PREP option (LIST_SEP option)*)?      -> ^(DEFINE item ^(OPTIONS option*))
-;
-
-option:
-    opt OPTION_PREP val -> ^(OPTION opt val)
-;
 
 /*****************************
 * Literals
 ******************************/
-s: ID;
-list: ID;
-item: ID;
-opt: ID|STRING;
-val: NUM|STRING;
 
-EOS                 : '.' ; // end of sentence
-EOSS                : ';' ; // end of sub-sentence
-EOC                 : ':' ; // end of control flow
-LIST_SEP            : ',' ;
+verb:
+  (ID|STRING) 
+;
 
-FOR_LOOP_KW         : 'for' ;
-FOR_LOOP_PREP       : 'in' ;
+noun:
+  ARTICLE? (ID|STRING)
+;
 
-STATE_KW            : 'state';
+type:
+  noun -> ^(TYPE noun)
+;
+
 
 DEFINE_KW           : 'define' ;
-DEFINE_PREP         : 'with' ;
 
-LIST_KW             : 'list';
-LIST_PREP           : 'contains' ;
-
-INSERT_KW           : 'insert' ;
-INSERT_PREP         : 'into' ;
-INSERT_POS_PREP     : 'at' ;
-REMOVE_KW           : 'remove' ;
-REMOVE_PREP         : 'from' ;
-REVERSE_KW          : 'reverse' ;
-
-OPTION_PREP         : 'as'|;
+ARTICLE             : 'the'|'an'|'a' ;
+AND                 : 'and'|',' ;
+AS                  : 'as' ; 
+IF                  : 'if' ;
+THEN                : 'then' ;
+PREPOSITION         : 'with'|'between'|'of'|'to'|'from' ;
 
 ID                  : ('a'..'z'|'A'..'Z') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')* ;
 NUM                 : '0'..'9'+ ;
-
-ESC_CHAR            : '\\' . ;
 STRING:
    ('"'  (ESC_CHAR | ~('"' |'\\'|'\n'))* '"'
   | '\'' (ESC_CHAR | ~('\''|'\\'|'\n'))* '\'')
   // Remove quotes
   {this.setText(this.getText().substring(1, this.getText().length-1));}
-; 
+;
 
+EOS                 : '.' ; // end of sentence
+ESC_CHAR            : '\\' . ;
 
 WS : (' '|'\t'|'\r'|'\n')+ {$channel=HIDDEN;} ;

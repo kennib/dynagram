@@ -11,11 +11,8 @@
   </head>
   <body>
     <dynagram style="width: 750px">
-list days contains monday, tuesday, wednesday, thursday, friday.
-state weekdays.
-insert saturday into days.
-insert sunday into days at 0.
-state all_days.
+define (count zero to num) as (append (minus one from num) to (count zero to (minus one from num))).
+define (count zero) as (append zero to list).
     </dynagram>
 
     <script type="text/javascript">
@@ -25,7 +22,7 @@ state all_days.
         $(this).css('white-space', 'nowrap');
 
         // Get the text and empty the element
-        text = $(this).text(); 
+        text = $.trim($(this).text()); 
         $(this).empty();
 
         // Create the diagram stage
@@ -34,7 +31,8 @@ state all_days.
 
         // Draw the dynagram
         interpreter = new dynagramInterpreter(diagram);
-        interpreter.eval(text);
+        if (text)
+          interpreter.eval(text);
 
         // Add the dynagram code to a new text area
         textbox = $('<textarea></textarea>').appendTo($(this));
@@ -43,7 +41,7 @@ state all_days.
           width: $(this).width(), height: 200
         });
         $(this).height($(this).height()+200);
-        textbox.text($.trim(text));
+        textbox.text(text);
 
         // Make diagram update when the code is changed
         textbox.change(function() {
