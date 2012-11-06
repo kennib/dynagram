@@ -132,4 +132,13 @@ dynagramInterpreter = function(display) {
     }
   };
 
+  this.reset = function() {
+    // Remove items, lists etc
+    this.items = {};
+    this.lists = {};
+    this.states = {};
+    
+    // Clear diagram
+    diagram.clear();
+  }
 };

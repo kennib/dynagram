@@ -72,6 +72,15 @@ raphaelDiagram = function() {
 
     return state;
   };
+
+  this.clear = function() {
+    // Clean up diagram
+    this.paper.clear();
+    // Clean up states
+    this.controls.states.empty();
+    // Reset default placement
+    raphaelDefaults.y = 10;
+  };
 }
 
 var raphaelDefaults = {
