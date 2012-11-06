@@ -5,13 +5,18 @@ options {
 }
 
 tokens {
+  FOR_LOOP;
+  ACTIONS;
+  ACTION;
+
   STATE;
   LIST;
   ITEMS;
-  ACTION;
+
   INSERT;
   REMOVE;
   REVERSE;
+
   DEFINE;
   OPTIONS;
   OPTION;
@@ -19,7 +24,23 @@ tokens {
 }
 
 diagram:
-   (action EOL)* -> ^(ACTION action*)
+  (sentence EOS)* -> sentence*
+;
+
+sentence:
+  (control_flow | action)
+;
+
+/*****************************
+* Control Flow
+******************************/
+
+control_flow:
+    for_loop 
+;
+
+for_loop:
+  FOR_LOOP_KW item FOR_LOOP_PREP list EOC action (EOSS action)*  -> ^(FOR_LOOP item list ^(ACTIONS action+))
 ;
 
 
@@ -27,13 +48,17 @@ diagram:
 * Actions
 ******************************/
 action:
+   action_type                                                   -> ^(ACTION action_type)
+;
+
+action_type:
     state_action
   | list_action
   | item_action
 ;
 
 state_action:
-    STATE_KW s? -> ^(STATE s?)
+    STATE_KW s?                                                  -> ^(STATE s?)
 ;
 
 list_action:
@@ -44,7 +69,7 @@ list_action:
 ;
 
 item_action:
-    DEFINE_KW item (DEFINE_PREP option (LIST_SEP option)*)? -> ^(DEFINE item ^(OPTIONS option*))
+    DEFINE_KW item (DEFINE_PREP option (LIST_SEP option)*)?      -> ^(DEFINE item ^(OPTIONS option*))
 ;
 
 option:
@@ -60,8 +85,13 @@ item: ID;
 opt: ID|STRING;
 val: NUM|STRING;
 
-EOL                 : '.' ;
+EOS                 : '.' ; // end of sentence
+EOSS                : ';' ; // end of sub-sentence
+EOC                 : ':' ; // end of control flow
 LIST_SEP            : ',' ;
+
+FOR_LOOP_KW         : 'for' ;
+FOR_LOOP_PREP       : 'in' ;
 
 STATE_KW            : 'state';
 

@@ -2,6 +2,7 @@ dynagramInterpreter = function(display) {
   this.display = display;
   this.items = {};
   this.lists = {};
+  this.listItems = {};
   this.states = {};
 
   this.eval = function(input) {
@@ -16,10 +17,30 @@ dynagramInterpreter = function(display) {
   };
 
   this.eval_tree = function(tree) {
-    switch(tree.token.text) {
+    var operation = null;
+    if (tree.token)
+      operation = tree.token.text;
+
+    switch(operation) {
+      case "FOR_LOOP":
+        var itemName = tree.children[0];
+        var listName = tree.children[1];
+        var actions = tree.children[2]
+        var items = this.listItems[listName];
+        
+        // For every item in the list
+        if (items != undefined) {
+          for (var i=0; i<items.length; i++) {
+            this.items[itemName] = items[i];
+            // Do each action
+            for (var a=0; a<actions.children.length; a++)
+              this.eval_tree(actions.children[a]);
+          }
+        }
+        break;
+
       case "ACTION":
-        for (var c=0; c<tree.children.length; c++)
-          this.eval_tree(tree.children[c]);
+        this.eval_tree(tree.children[0]);
         break;
 
       case "STATE":
@@ -69,6 +90,7 @@ dynagramInterpreter = function(display) {
 
         // Create list
         this.lists[listName] = this.display.createList(listProps, listItems);
+        this.listItems[listName] = listItems;
         break;
 
       case "INSERT":
@@ -96,6 +118,13 @@ dynagramInterpreter = function(display) {
         // Reverse list
         list.reverse();
         break;
+
+      default:
+        // Evaluate each child operation
+        if (tree.children) {
+          for (var c=0; c<tree.children.length; c++)
+            this.eval_tree(tree.children[c]);
+        }
     }
   }
 
@@ -126,8 +155,9 @@ dynagramInterpreter = function(display) {
     } else {
       var listProps = {};
       var listItems = [];
-      var list = this.display.createItem(listProps, listItems);
+      var list = this.display.createList(listProps, listItems);
       this.lists[listName] = list;
+      this.listItems[listName] = listItems;
       return list;
     }
   };
