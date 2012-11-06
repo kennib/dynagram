@@ -1,20 +1,40 @@
 raphaelDiagram = function() {
-  this.init = function() {
-    var width = 500, height = 350;
+  this.init = function(element) {
+    // Get/set height and width of diagram
+    var e = $(element);
+    if (e.width()) {
+      var width = e.width();
+    } else {
+      var width = 700;
+      e.width(width);
+    }
+    if (e.height()) {
+      var height = e.width();
+    } else {
+      var height = 350;
+      e.height(height);
+    }
     var top = 10, left = 10;
 
     // Create canvas
-    this.paper = Raphael(left, top, width, height);
+    if (element != undefined)
+      this.paper = Raphael(element, 2/3*width, height);
+    else
+      this.paper = Raphael(left, top, width, height);
 
     // Create UI
     this.controls = $('<div class="dynagramUI"></div>').insertAfter(this.paper.canvas);
     // Place UI next to the canvas
+    var c = $(this.paper.canvas).css('display', 'inline-block');
+    c.css('vertical-align', 'top');
     this.controls.css({
-      position: 'absolute',
-      top: top,
-      left: left+width,
-      width: width/3,
-      height: height,
+      display: 'inline-block',
+      'vertical-align': 'top',
+      position: c.css('position'),
+      top: c.css('top'),
+      left: parseInt(c.css('left'))+c.width(),
+      width: 1/3*width,
+      height: c.height(),
     });
     // Create list for states
     this.controls.states = $('<ul class="dynagramUI-states"></ul>');

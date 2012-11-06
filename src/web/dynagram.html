@@ -10,12 +10,35 @@
     <script src="dynagramInterpreter.js" type="text/javascript"></script>
   </head>
   <body>
+    <dynagram>
+list days contains monday, tuesday, wednesday, thursday, friday.
+state weekdays.
+insert saturday into days.
+insert sunday into days at 0.
+state all_days.
+    </dynagram>
     <script type="text/javascript">
-      diagram = new raphaelDiagram();
-      diagram.init();
+      $('dynagram').each(function() {
+        // Make the diagram an inline block element
+        $(this).css('display', 'inline-block');
 
-      interpreter = new dynagramInterpreter(diagram);
-      //interpreter.eval("define cow.");
+        // Get the text and empty the element
+        text = $(this).text(); 
+        $(this).empty();
+
+        // Create the diagram stage
+        diagram = new raphaelDiagram();
+        diagram.init(this);
+
+        // Draw the dynagram
+        interpreter = new dynagramInterpreter(diagram);
+        interpreter.eval(text);
+
+        // Add the dynagram code to a new text area
+        textbox = $('<textarea></textarea>').appendTo($(this));
+        textbox.css({width: $(this).width(), height: 200});
+        textbox.text($.trim(text));
+      });
     </script>
   </body>
 </html>
