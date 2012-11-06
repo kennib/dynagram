@@ -105,9 +105,12 @@ dynagramInterpreter = function(display) {
         // Get index
         if (tree.children[2])
           var index = tree.children[2].getText();
+        else
+          var index = this.listItems[listName].length;
 
         // Insert item into list
         list.insert(item, index);
+        this.listItems[listName].splice(index,0,item);
         break;
 
       case "REVERSE":
