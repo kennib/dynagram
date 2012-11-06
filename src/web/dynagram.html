@@ -44,6 +44,12 @@ state all_days.
         });
         $(this).height($(this).height()+200);
         textbox.text($.trim(text));
+
+        // Make diagram update when the code is changed
+        textbox.change(function() {
+          interpreter.reset();
+          interpreter.eval(textbox.attr('value'));
+        });
       });
     </script>
   </body>
