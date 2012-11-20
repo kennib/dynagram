@@ -11,8 +11,21 @@
   </head>
   <body>
     <dynagram style="width: 750px">
-define (count zero to num) as (append (minus one from num) to (count zero to (minus one from num))).
-define (count zero) as (append zero to list).
+define count from zero to num. as
+  define prev_num as
+    minus one from num.
+  define prev_nums as
+    count zero to prev_num.
+  append prev_num to prev_nums.
+
+define count zero to one. as
+  create nums as list
+  append zero to nums.
+
+define digits as
+  count zero to ten.
+for num in digits
+  print num.
     </dynagram>
 
     <script type="text/javascript">
