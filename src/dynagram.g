@@ -6,29 +6,58 @@ options {
 
 tokens {
   SENTENCE;
+  ITERATION_FOR;
+  ITERATION_WHILE;
   CONDITION;
   ACTION;
   ATTRIBUTE;
   TYPE;
 }
 
+@lexer::members {
+  previousIndents = -1;
+  indentLevel = 0;
+  tokens = [];
+
+  this.jump = function(ttype) {
+    indentLevel += (ttype == this.DEDENT ? -1 : 1);
+    this.emit(new org.antlr.runtime.CommonToken(ttype, "level=" + indentLevel));
+  }
+}
+
 diagram:
-  (sentence EOS)* -> sentence*
+  (action|control)+
 ;
 
-sentence:
-  (conditional THEN)? action -> ^(SENTENCE conditional? action)
+block:
+  INDENT (action|control)+ (DEDENT|EOF)
 ;
 
 
 /*****************************
-* Conditionals
+* Control Flow
 ******************************/
 
-conditional:
-  IF condition=(action|attribute) -> ^(CONDITION $condition)
+control:
+  ( iteration | conditional )
 ;
 
+iteration:
+    FOR object=noun IN list=noun body=block
+    -> ^(ITERATION_FOR $object $list $body)
+
+  | WHILE condition body=block
+    -> ^(ITERATION_WHILE condition $body)
+;
+
+conditional:
+    IF condition THEN body=block
+    -> ^(CONDITION condition $body)
+;
+
+condition:
+  attribute
+;
 
 /*****************************
 * Actions
@@ -36,16 +65,23 @@ conditional:
 
 action:
     general_action
-  | define
+  | create_object
+  | define_action
 ;
 
 general_action:
-    '(' act=verb subject=(general_action|noun) (PREPOSITION object+=(general_action|noun) (AND object+=(general_action|noun))*)? ')'
+    act=verb PREPOSITION? subject=noun ((PREPOSITION object+=noun) (AND object+=noun)*)? EOS
     -> ^(ACTION $act $subject? $object*)
 ;
 
-define:
-    act=DEFINE_KW subject=(action|attribute) AS object=(sentence|type)    -> ^(ACTION $act $subject? $object?)
+define_action:
+    act=DEFINE_KW subject=(attribute|action) AS object=(block)
+    -> ^(ACTION $act $subject? $object*)
+;
+
+create_object:
+    act=CREATE_KW subject=(action|attribute) AS object=(type)
+    -> ^(ACTION $act $subject? $object*)
 ;
 
 
@@ -76,12 +112,16 @@ type:
 
 
 DEFINE_KW           : 'define' ;
+CREATE_KW           : 'create' ;
 
 ARTICLE             : 'the'|'an'|'a' ;
 AND                 : 'and'|',' ;
 AS                  : 'as' ; 
 IF                  : 'if' ;
+IN                  : 'in' ;
+FOR                 : 'for' ;
 THEN                : 'then' ;
+WHILE               : 'while' ;
 PREPOSITION         : 'with'|'between'|'of'|'to'|'from' ;
 
 ID                  : ('a'..'z'|'A'..'Z') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')* ;
@@ -94,6 +134,36 @@ STRING:
 ;
 
 EOS                 : '.' ; // end of sentence
+EOSS                : ';' ; // end of a sub sentence
 ESC_CHAR            : '\\' . ;
 
-WS : (' '|'\t'|'\r'|'\n')+ {$channel=HIDDEN;} ;
+WS:
+  SP { this.skip(); }
+;
+
+NEWLINE:
+  NL SP?
+  {
+    n = (!$SP.text ? 0 : $SP.text.length);
+    //console.log('line: '+this.state.tokenStartLine+', indent: '+n);
+
+    if(n > previousIndents) {
+      this.jump(this.INDENT);
+      previousIndents = n;
+    } else if(n < previousIndents) {
+      this.jump(this.DEDENT);
+      previousIndents = n;
+    } else if(this.input.LA(1) == EOF) {
+      while(indentLevel > 0) {
+        this.jump(this.DEDENT);
+      }
+    } else {
+      this.skip();
+    }
+  }
+;
+
+fragment NL     : '\r'? '\n' | '\r';
+fragment SP     : (' ' | '\t')+;
+fragment INDENT : ;
+fragment DEDENT : ;
