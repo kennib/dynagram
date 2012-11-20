@@ -65,25 +65,24 @@ condition:
 
 action:
     general_action
-  | create_object
   | define_action
+  | set_attribute
 ;
 
 general_action:
-    act=verb PREPOSITION? subject=noun ((PREPOSITION object+=noun) (AND object+=noun)*)? EOS
+    act=verb PREPOSITION? subject=noun ((PREPOSITION object+=noun) (AND object+=noun)*)?
     -> ^(ACTION $act $subject? $object*)
 ;
 
 define_action:
-    act=DEFINE_KW subject=(attribute|action) AS object=(block)
-    -> ^(ACTION $act $subject? $object*)
+    act=DEFINE_KW '(' subject=(general_action) ')' AS type? object=(block+)
+    -> ^(ACTION $act $subject? type? $object*)
 ;
 
-create_object:
-    act=CREATE_KW subject=(action|attribute) AS object=(type)
-    -> ^(ACTION $act $subject? $object*)
+set_attribute:
+    act=SET_KW subject=attribute AS type? object=(block+)
+    -> ^(ACTION $act $subject? type? $object*)
 ;
-
 
 /*****************************
 * Attributes
@@ -112,7 +111,7 @@ type:
 
 
 DEFINE_KW           : 'define' ;
-CREATE_KW           : 'create' ;
+SET_KW              : 'set' ;
 
 ARTICLE             : 'the'|'an'|'a' ;
 AND                 : 'and'|',' ;
@@ -133,8 +132,6 @@ STRING:
   {this.setText(this.getText().substring(1, this.getText().length-1));}
 ;
 
-EOS                 : '.' ; // end of sentence
-EOSS                : ';' ; // end of a sub sentence
 ESC_CHAR            : '\\' . ;
 
 WS:
