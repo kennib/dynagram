@@ -11,20 +11,20 @@
   </head>
   <body>
     <dynagram style="width: 750px">
-define (count from zero to num) as
+define (count from 0 to num) as
   set prev_num as
-    minus one from num
+    minus 1 from num
   set prev_nums as
-    count zero to prev_num
+    count 0 to prev_num
   append prev_num to prev_nums
 
-define (count zero to one) as
+define (count 0 to 1) as
   set nums as
     new list
-  append zero to nums
+  append 0 to nums
 
 set digits as
-  count zero to ten
+  count 0 to 10
 for num in digits
   print num
     </dynagram>

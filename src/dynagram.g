@@ -102,7 +102,7 @@ verb:
 ;
 
 noun:
-  ARTICLE? (ID|STRING)
+  ARTICLE? (ID|STRING|NUM)
 ;
 
 type:
