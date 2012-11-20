@@ -30,7 +30,7 @@ diagram:
 ;
 
 block:
-  INDENT (action|control)+ (DEDENT|EOF)
+  INDENT! (action|control)+ (DEDENT|EOF)!
 ;
 
 
