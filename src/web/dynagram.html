@@ -7,18 +7,19 @@
     <script src="antlr3-all.js" type="text/javascript"></script>
     <script src="dynagramLexer.js" type="text/javascript"></script>
     <script src="dynagramParser.js" type="text/javascript"></script>
+    <script src="dynagramTypeChecker.js" type="text/javascript"></script>
     <script src="dynagramInterpreter.js" type="text/javascript"></script>
   </head>
   <body>
     <dynagram style="width: 750px">
-define (count from 0 to num) as
+define (count from 0 to num) as list
   set prev_num as
     minus 1 from num
   set prev_nums as
     count 0 to prev_num
   append prev_num to prev_nums
 
-define (count 0 to 1) as
+define (count 0 to 1) as list
   set nums as
     new list
   append 0 to nums

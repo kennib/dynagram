@@ -6,11 +6,19 @@ dynagramInterpreter = function(display) {
   this.states = {};
 
   this.eval = function(input) {
+    // Scanner and Lexer
     var cstream = new org.antlr.runtime.ANTLRStringStream(input);
     var lexer = new dynagramLexer(cstream);
     var tstream = new org.antlr.runtime.CommonTokenStream(lexer);
+    // Parser
     var parser = new dynagramParser(tstream);
-    var tree = parser.diagram().tree;
+    var diagram = parser.diagram();
+    var tree = diagram.tree;
+    var nodes = new org.antlr.runtime.tree.CommonTreeNodeStream(tree);
+    nodes.setTokenStream(tstream);
+    // Type Checker
+    var checker = new dynagramTypeChecker(nodes);
+    var diagram = checker.diagram();
 
     this.eval_tree(tree);
     return tree;
