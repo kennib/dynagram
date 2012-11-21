@@ -77,17 +77,17 @@ action:
 
 general_action:
     act=verb PREPOSITION? subject=noun ((PREPOSITION object+=noun) (AND object+=noun)*)?
-    -> ^(ACTION $act $subject $object*)
+    -> ^(ACTION[$act.text, $text] $act $subject $object*)
 ;
 
 define_action:
     act=DEFINE_KW '(' subject=general_action ')' AS type? def=block
-    -> ^(ACTION $act $subject? type? block)
+    -> ^(ACTION[$act, $text] $act $subject? type? block)
 ;
 
 set_attribute:
     act=SET_KW subject=attribute AS type? val=block
-    -> ^(ACTION $act $subject type? block)
+    -> ^(ACTION[$act, $text] $act $subject type? block)
 ;
 
 /*****************************
@@ -103,12 +103,14 @@ attribute:
 * Literals
 ******************************/
 
-verb:
-  (ID|STRING) 
+verb returns [text]:
+  word=(ID|STRING)
+  { $text = $word; }
 ;
 
-noun:
-  ARTICLE? (ID|STRING|NUM)
+noun returns [text]:
+  ARTICLE? word=(ID|STRING|NUM)
+  { $text = $word; }
 ;
 
 type:
@@ -141,7 +143,7 @@ STRING:
 ESC_CHAR            : '\\' . ;
 
 WS:
-  SP { this.skip(); }
+  SP { $channel=HIDDEN; }
 ;
 
 NEWLINE:
