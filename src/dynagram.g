@@ -20,9 +20,16 @@ tokens {
 
   this.jump = function(ttype) {
     indentLevel += (ttype == this.DEDENT ? -1 : 1);
-    this.emit(new org.antlr.runtime.CommonToken(ttype, "level=" + indentLevel));
+    
+    var indent = '';
+    for (var i=0; i<indentLevel; i++) indent += '  ';
+
+    var level = new org.antlr.runtime.CommonToken(ttype, '\n'+indent);
+    level.setLine(this.getLine());
+    this.emit(level);
   }
 }
+
 
 diagram:
   (action|control)+
