@@ -8,10 +8,10 @@ dynagramInterpreter = function(display) {
   this.eval = function(input) {
     // Scanner and Lexer
     var cstream = new org.antlr.runtime.ANTLRStringStream(input);
-    var lexer = new dynagramLexer(cstream);
+    lexer = new dynagramLexer(cstream);
     var tstream = new org.antlr.runtime.CommonTokenStream(lexer);
     // Parser
-    var parser = new dynagramParser(tstream);
+    parser = new dynagramParser(tstream);
     var diagram = parser.diagram();
     var tree = diagram.tree;
     var nodes = new org.antlr.runtime.tree.CommonTreeNodeStream(tree);

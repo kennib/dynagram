@@ -24,7 +24,10 @@ options {
         return 'TypeCheckException('+this.expected+', '+this.given+')';
       },
       getMessage: function() {
-        return 'The given type <'+this.given+'> is incorrect. The type should be <'+this.expected+'>.';
+        var msg = '\n';
+        msg += 'An error has occured in "'+this.node.toString()+'"\n'; 
+        msg += 'The given type <'+this.given+'> is incorrect. The type should be <'+this.expected+'>.';
+        return msg;
       },
       name: "org.antlr.runtime.TypeCheckException" 
     }
@@ -38,7 +41,6 @@ diagram:
 
 block returns [type]:
   (action|control)+
-  {  }
 ;
 
 control:
