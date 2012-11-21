@@ -6,12 +6,39 @@ options {
   output=AST;
 }
 
+@header {
+  // Create an exception for incorrect types
+  // Has expected type and given type parameters
+  org.antlr.runtime.TypeCheckException = function(input, expected, given) {
+    org.antlr.runtime.TypeCheckException.superclass.constructor.call(this, input);
+    this.expected = expected;
+    this.given = given;
+  };
+
+  // Add the exception
+  org.antlr.lang.extend(
+    org.antlr.runtime.TypeCheckException,
+    org.antlr.runtime.RecognitionException,
+    {
+      toString: function() {
+        return 'TypeCheckException('+this.expected+', '+this.given+')';
+      },
+      getMessage: function() {
+        return 'The given type <'+this.given+'> is incorrect. The type should be <'+this.expected+'>.';
+      },
+      name: "org.antlr.runtime.TypeCheckException" 
+    }
+  );
+}
+
+
 diagram:
   (action|control)+
 ;
 
 block returns [type]:
   (action|control)+
+  {  }
 ;
 
 control:
@@ -36,9 +63,7 @@ definition returns [name]:
     var type = $type.type;
     //console.log($subject.name+': '+type);
     if (type != $block.type) {
-      var mte = new org.antlr.runtime.MismatchedTokenException(null, this.input);
-      //this.recover(mte);
-      //throw mte;
+      throw new org.antlr.runtime.TypeCheckException(this.input, type, $block.type);
     }
   }
   { $name = $actName.text; }
