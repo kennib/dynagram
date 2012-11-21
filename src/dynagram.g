@@ -17,7 +17,6 @@ tokens {
 @lexer::members {
   previousIndents = -1;
   indentLevel = 0;
-  tokens = [];
 
   this.jump = function(ttype) {
     indentLevel += (ttype == this.DEDENT ? -1 : 1);
@@ -71,17 +70,17 @@ action:
 
 general_action:
     act=verb PREPOSITION? subject=noun ((PREPOSITION object+=noun) (AND object+=noun)*)?
-    -> ^(ACTION $act $subject? $object*)
+    -> ^(ACTION $act $subject $object*)
 ;
 
 define_action:
-    act=DEFINE_KW '(' subject=(general_action) ')' AS type? object=(block+)
-    -> ^(ACTION $act $subject? type? $object*)
+    act=DEFINE_KW '(' subject=general_action ')' AS type? def=block
+    -> ^(ACTION $act $subject? type? block)
 ;
 
 set_attribute:
-    act=SET_KW subject=attribute AS type? object=(block+)
-    -> ^(ACTION $act $subject? type? $object*)
+    act=SET_KW subject=attribute AS type? val=block
+    -> ^(ACTION $act $subject type? block)
 ;
 
 /*****************************
