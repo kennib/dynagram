@@ -12,17 +12,19 @@
   </head>
   <body>
     <dynagram style="width: 750px">
+define (count 0 to 1) as list
+  set nums as
+    new list
+  append 0 to nums
+  return nums
+  
 define (count from 0 to num) as list
   set prev_num as
     minus 1 from num
   set prev_nums as
     count 0 to prev_num
   append prev_num to prev_nums
-
-define (count 0 to 1) as list
-  set nums as
-    new list
-  append 0 to nums
+  return prev_nums
 
 set digits as
   count 0 to 10

@@ -34,6 +34,11 @@ options {
   );
 }
 
+@members {
+  // Type dictionary for attributes and actions
+  this.dataType = {};
+}
+
 
 diagram:
   (action|control)+
@@ -41,6 +46,7 @@ diagram:
 
 block returns [type]:
   (action|control)+
+  { $type = $action.type; }
 ;
 
 control:
@@ -53,35 +59,44 @@ condition:
   attribute
 ;
 
-action returns [name]:
+action returns [type, subject]:
     definition
-  | ^(ACTION actName=verb subject=noun object=noun*)
-      { $name = $actName.text; }
+    { $type = $definition.type; }
+  | new
+    { $type = $new.type; }
+  | ^(ACTION act=verb subj=noun object=noun*)
+    { $type = this.dataType[$subj.word]; $subject = $subj.word; }
 ;
 
-definition returns [name]:
-  ^(ACTION actName=(DEFINE_KW|SET_KW) (subject=attribute|subject=action) type? block)
+definition returns [type, subject]:
+  ^(ACTION act=(DEFINE_KW|SET_KW) (subj=attribute|subj=action) t=type? block)
   {
-    var type = $type.type;
-    //console.log($subject.name+': '+type);
-    if (type != $block.type) {
+    var type = $t.type;
+    if (type != undefined && type != $block.type) {
       throw new org.antlr.runtime.TypeCheckException(this.input, type, $block.type);
     }
   }
-  { $name = $actName.text; }
+  { this.dataType[$subj.subject] = $block.type; $subject=$subj.subject; }
 ;
 
-attribute returns [name]:
-  ^(ATTRIBUTE attrName=noun object=noun*)
-  { $name = $attrName.text; }
+new returns [type]:
+  ^(ACTION t=type)
+  { $type = $t.type; }
 ;
 
-verb:
- (ID|STRING)
+attribute returns [type, subject]:
+  ^(ATTRIBUTE attr=noun object=noun*)
+  { $type = this.dataType[$attr.word]; $subject = $attr.word }
 ;
 
-noun:
-  ARTICLE!? (ID|STRING|NUM)
+verb returns [word]:
+  w=(ID|STRING)
+  { $word = $w; }
+;
+
+noun returns [word]:
+  ARTICLE? w=(ID|STRING|NUM)
+  { $word = $w; }
 ;
 
 type returns [type]:
