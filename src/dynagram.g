@@ -73,21 +73,27 @@ action:
     general_action
   | define_action
   | set_attribute
+  | new_object
 ;
 
 general_action:
     act=verb PREPOSITION? subject=noun ((PREPOSITION object+=noun) (AND object+=noun)*)?
-    -> ^(ACTION[$act.text, $text] $act $subject $object*)
+    -> ^(ACTION[$act.word] $act $subject $object*)
 ;
 
 define_action:
     act=DEFINE_KW '(' subject=general_action ')' AS type? def=block
-    -> ^(ACTION[$act, $text] $act $subject? type? block)
+    -> ^(ACTION[$act] $act $subject? type? block)
 ;
 
 set_attribute:
     act=SET_KW subject=attribute AS type? val=block
-    -> ^(ACTION[$act, $text] $act $subject type? block)
+    -> ^(ACTION[$act] $act $subject type? block)
+;
+
+new_object:
+    act=NEW_KW type
+    -> ^(ACTION[$act] type)
 ;
 
 /*****************************
@@ -103,14 +109,14 @@ attribute:
 * Literals
 ******************************/
 
-verb returns [text]:
-  word=(ID|STRING)
-  { $text = $word; }
+verb returns [word]:
+  w=(ID|STRING)
+  { $word = $w; }
 ;
 
-noun returns [text]:
-  ARTICLE? word=(ID|STRING|NUM)
-  { $text = $word; }
+noun returns [word]:
+  ARTICLE? w=(ID|STRING|NUM)
+  { $word = $w; }
 ;
 
 type:
@@ -120,6 +126,7 @@ type:
 
 DEFINE_KW           : 'define' ;
 SET_KW              : 'set' ;
+NEW_KW              : 'new';
 
 ARTICLE             : 'the'|'an'|'a' ;
 AND                 : 'and'|',' ;
