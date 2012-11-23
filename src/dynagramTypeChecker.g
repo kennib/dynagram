@@ -64,12 +64,12 @@ action returns [type, subject]:
     { $type = $definition.type; }
   | new
     { $type = $new.type; }
-  | ^(ACTION act=verb subj=noun object=noun*)
+  | ^(ACTION subj=noun object=noun*)
     { $type = this.dataType[$subj.word]; $subject = $subj.word; }
 ;
 
 definition returns [type, subject]:
-  ^(ACTION act=(DEFINE_KW|SET_KW) (subj=attribute|subj=action) t=type? block)
+  ^((DEFINE_ACTION|SET_ATTR) (subj=attribute|subj=action) t=type? block)
   {
     var type = $t.type;
     if (type != undefined && type != $block.type) {
@@ -80,7 +80,7 @@ definition returns [type, subject]:
 ;
 
 new returns [type]:
-  ^(ACTION t=type)
+  ^(NEW_OBJECT t=type)
   { $type = $t.type; }
 ;
 

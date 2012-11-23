@@ -5,13 +5,16 @@ options {
 }
 
 tokens {
-  SENTENCE;
   ITERATION_FOR;
   ITERATION_WHILE;
   CONDITION;
   ACTION;
   ATTRIBUTE;
   TYPE;
+
+  DEFINE_ACTION;
+  SET_ATTR;
+  NEW_OBJECT;
 }
 
 @lexer::members {
@@ -78,22 +81,22 @@ action:
 
 general_action:
     act=verb PREPOSITION? subject=noun ((PREPOSITION object+=noun) (AND object+=noun)*)?
-    -> ^(ACTION[$act.word] $act $subject $object*)
+    -> ^(ACTION[$act.word] $subject $object*)
 ;
 
 define_action:
     act=DEFINE_KW '(' subject=general_action ')' AS type? def=block
-    -> ^(ACTION[$act] $act $subject? type? block)
+    -> ^(DEFINE_ACTION[$act] $subject? type? block)
 ;
 
 set_attribute:
     act=SET_KW subject=attribute AS type? val=block
-    -> ^(ACTION[$act] $act $subject type? block)
+    -> ^(SET_ATTR[$act] $subject type? block)
 ;
 
 new_object:
     act=NEW_KW type
-    -> ^(ACTION[$act] type)
+    -> ^(NEW_OBJECT[$act] type)
 ;
 
 /*****************************
@@ -101,7 +104,8 @@ new_object:
 ******************************/
 
 attribute:
-    attr=noun (PREPOSITION object+=noun (AND object+=noun)*)? -> ^(ATTRIBUTE $attr $object*)
+    attr=noun (PREPOSITION object+=noun (AND object+=noun)*)?
+    -> ^(ATTRIBUTE $attr $object*)
 ;
 
 
