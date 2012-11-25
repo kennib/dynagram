@@ -83,6 +83,7 @@ set returns [result]:
         subj.setAttr(attr, value);
       };
     } else {
+      console.log($text, $subj.attr);
       this.setObject(attr, value);
     }
 
@@ -99,9 +100,9 @@ new returns [type, result]:
 ;
 
 attribute returns [result, attr, objects]:
-  ^(ATTRIBUTE atr=noun objs+=noun*)
+  ^(ATTRIBUTE subj=noun objs+=noun*)
   {
-    var subj = $atr.word.text;
+    var subj = $subj.text;
     var objs = [];
     for (var obj in $objs) {
       objs.push(this.getObject(obj.text));
@@ -114,6 +115,7 @@ attribute returns [result, attr, objects]:
       result.push(obj);
     }
 
+    $attr = subj;
     $objects = objs;
   }
 ;
