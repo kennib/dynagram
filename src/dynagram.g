@@ -124,7 +124,7 @@ noun returns [word]:
 ;
 
 type:
-  noun -> ^(TYPE noun)
+  noun -> TYPE[$noun.word]
 ;
 
 

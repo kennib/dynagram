@@ -100,7 +100,7 @@ noun returns [word]:
 ;
 
 type returns [type]:
-  ^(TYPE t=noun)
+  t=TYPE
   { $type = $t.text; }
 ;
 
