@@ -19,9 +19,10 @@ dynagramInterpreter = function(display) {
     // Type Checker
     var checker = new dynagramTypeChecker(nodes);
     var diagram = checker.diagram();
-
-    this.eval_tree(tree);
-    return tree;
+    // Evaluator
+    nodes.reset();
+    var evaluater = new dynagramEvaluater(nodes);
+    eval = evaluater.diagram();
   };
 
   this.eval_tree = function(tree) {
