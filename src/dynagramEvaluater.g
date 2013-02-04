@@ -41,6 +41,7 @@ options {
       if (action == undefined) {
         var action = new dynagramAction(type);
         action.name = name;
+        action.__proto__ = this;
         this.setAttr(name, action);
       }
       
@@ -94,9 +95,11 @@ options {
       for (var a in subactions.actions) {
         var action = subactions.actions[a];
         var action_params = subactions.params[a];
+        for (var p in action_params) {
+          console.log("--", this, action_params);
+          action_params[p] = this.getAttr(action_params[p]);
+        }
         var result = action.eval(action_params);
-        if (action.name == "print")
-          console.log("PRINT", result)
       }
 
       return result;
@@ -104,8 +107,14 @@ options {
 
     return;
   };
-  
+
   this.root = new dynagramObject();
+  
+  this.root.print = new dynagramAction();
+  this.root.print.eval = function(value) {
+    console.log("PRINT", value);
+    return value;
+  };
 
   console.log(this);
 }
