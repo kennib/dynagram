@@ -47,6 +47,39 @@ options {
       return defineAction;
     };
 
+    this.newAction = function(type) {
+      var scope = this;
+      var newAction = new dynagramAction(this);
+      newAction.name = "new";
+      
+      newAction.eval = function() {
+        console.log("New", type);
+        return new dynagramObject(type);
+      };
+      
+      return newAction;
+    };
+
+    this.setAction = function(attr, actions) {
+      var scope = this;
+      var setAction = new dynagramAction(this);
+      setAction.name = "set";
+      
+      setAction.eval = function() {
+        for (var a in actions) {
+          var result = actions[a].eval();
+          console.log("result", actions[a], result);
+        }
+
+        console.log("Set", attr, "as", result);
+        scope.setAttr(attr, result);
+
+        return result;
+      };
+      
+      return setAction;
+    };
+
     switch(this.type) {
       case "scope":
         this.eval = function(actions) {
@@ -161,12 +194,12 @@ def [scope] returns [action]:
 
 set [scope] returns [action]:
   ^(SET_ATTR subj=attribute[scope] t=type? block[scope])
-  { $action = new dynagramAction(); /*TODO*/ }
+  { $action = $scope.setAction($subj.attr, $block.actions); }
 ;
 
 new [scope] returns [action]:
   ^(NEW_OBJECT t=type)
-  { $action = new dynagramAction(); /*TODO*/ }
+  { $action = $scope.newAction($t.type); }
 ;
 
 control [scope]:
@@ -177,27 +210,11 @@ control [scope]:
 
 condition [scope] returns [result]:
   attribute[scope]
-  { $result = $attribute.result ? true : false; }
 ;
 
-attribute [scope] returns [result, attr, objects]:
-  ^(ATTRIBUTE atr=noun objs+=noun*)
-  {
-    var subj = $atr.word.text;
-    var objs = [];
-    for (var obj in $objs) {
-      objs.push(this.getObject(obj.text));
-    }
-    if (objs.length == 0)
-      obj = null;
-
-    $result = [];
-    for (var obj in objs) {
-      result.push(obj);
-    }
-
-    $objects = objs;
-  }
+attribute [scope] returns [attr]:
+  ^(ATTRIBUTE subj=noun objs+=noun*)
+  { $attr = $subj.word; }
 ;
 
 verb returns [word]:
