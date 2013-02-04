@@ -17,28 +17,34 @@ options {
     };
     
     this.getAttr = function(attr) {
-      var attr = this.attrs[attr];
+      return this.attrs[attr];
     }
 
     this.getAction = function(actionName) {
-      var action = this.attrs[actionName];
+      var action = this.getAttr(actionName);
       if (action === undefined) {
-        console.log("Action '", actionName, "' of", this, "does not exist");
+        console.log("Action", "'"+actionName+"'", "of", this, "does not exist");
         action = new dynagramAction(this, actionName);
+        this.setAttr(actionName, action);
       }
 
       return action;
     };
 
-    this.defineAction = function(action) {
+    this.defineAction = function(action, subActions) {
       var scope = this;
-      var define = new dynagramAction(this);
-      define.name = "define";
-      define.eval = function() {
-        console.log("Defining", action);
-        scope.setAttr(action.name, action);
+      var defineAction = new dynagramAction(this);
+      defineAction.name = "define";
+
+      defineAction.eval = function() {
+        var scopeAction = scope.getAction(action.name);
+        scopeAction.addCase(subActions, action.caseParams);
+        console.log("Defining", action, scopeAction);
+
+        return scopeAction;
       };
-      return define;
+
+      return defineAction;
     };
 
     switch(this.type) {
@@ -62,29 +68,42 @@ options {
     return;
   };
 
+
   dynagramAction = function(scope, name) {
     this.__proto__ = scope;
 
     this.name = name;
     this.cases = {};
     
-    this.case_params = undefined;
+    this.caseParams = undefined;
 
-    this.setCase = function(actions, params) {
+    this.addCase = function(actions, params) {
+      console.log("Adding case", "'"+params+"'", actions, "to", "'"+this.name+"'"); 
       this.cases[params] = actions;
     };
 
+    this.addCases = function(cases) {
+      for (var params in cases) {
+        var actions = cases[params];
+        this.addCase(actions, params);
+      }
+    };
+
     this.getCase = function(params) {
+      if (this.cases[params] == undefined)
+        this.addCase([], params);
+
       var _case = new dynagramAction(this.scope, this.name);
       _case.cases = this.cases;
-      _case.case_params = params;
+      _case.caseParams = params;
+
       return _case;
     };
 
     this.eval = function() {
-      console.log("Performing '", this.name, "' action");
+      console.log("Performing", "'"+this.name+"'", "action");
 
-      var subActions = this.cases[this.case_params];
+      var subActions = this.cases[this.caseParams];
 
       for (var a in subActions) {
         var subAction = subActions[a];
@@ -124,13 +143,20 @@ action [scope] returns [action]:
    | ^(ACTION subj=noun objects+=noun*)
     {
       var action = $scope.getAction($ACTION.text);
-      $action = action.getCase({subject: $subj.word, objects: $objects});
+      var params = [$subj.word];
+      
+      for (var o in $objects) {
+        var object = $objects[o].getText();
+        params.push(object);
+      }
+
+      $action = action.getCase(params);
     }
 ;
 
 def [scope] returns [action]:
   ^(DEFINE_ACTION subj=action[scope] t=type? block[scope])
-  { $action = scope.defineAction($subj.action); }
+  { $action = $scope.defineAction($subj.action, $block.actions); }
 ;
 
 set [scope] returns [action]:
