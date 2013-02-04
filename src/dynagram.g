@@ -86,17 +86,17 @@ general_action:
 
 define_action:
     act=DEFINE_KW '(' subject=general_action ')' AS type? def=block
-    -> ^(DEFINE_ACTION[$act] $subject? type? block)
+    -> ^(ACTION[$act] $subject? type? block)
 ;
 
 set_attribute:
     act=SET_KW subject=attribute AS type? val=block
-    -> ^(SET_ATTR[$act] $subject type? block)
+    -> ^(ACTION[$act] $subject type? block)
 ;
 
 new_object:
     act=NEW_KW type
-    -> ^(NEW_OBJECT[$act] type)
+    -> ^(ACTION[$act] type)
 ;
 
 /*****************************

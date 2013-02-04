@@ -9,28 +9,49 @@ options {
 @members {
   dynagramObject = function(type) {
     this.type = type;
+
+    this.attrs = {};
     
     this.setAttr = function(val) {
-      this[attr] = val;
+      this.attrs[attr] = val;
+    };
+
+    this.getAttr = function(val) {
+      return this.attrs[attr];
     };
 
     return;
   };
 
-  this.objects = {};
+  dynagramActionPlan = function(scope) {
+    this.__proto__ = scope;
 
-  this.createObject = function(type) {
-    return new dynagramObject(type);
+    this.cases = {};
+
+    this.setCase = function(params, action) {
+      this.cases[params] = action;
+    };
+
+    this.getCase = function(params) {
+      return this.cases[params];
+    };
   };
 
-  this.getObject = function(obj) {
-    return this.objects[obj];
-  };
+  dynagramAction = function(actionPlan, params) {
+    this.__proto__ = actionPlan;
 
-  this.setObject = function(obj, val) {
-    this.objects[obj] = val;
-  };
-  
+    this.params = params;
+    this.subActions = this.getCase(this.params);
+    
+    this.eval = function() {
+      for (var a in this.subactions) {
+        var subAction = this.subActions[a];
+        var result = subAction.eval();
+      }
+      return result;
+    };
+  }
+
   console.log(this);
 }
 
@@ -56,46 +77,8 @@ condition returns [result]:
 ;
 
 action returns [result]:
-    def
-    { $result = $def.result; }
-  | set
-    { $result = $set.result; }
-  | new
-    { $result = $new.result; }
-  | ^(ACTION subj=noun object=noun*)
-    { $result = this.getObject($subj.word); }
-;
-
-def returns [result]:
-  ^(DEFINE_ACTION subj=action t=type? block)
-  { $result = $block.result; }
-;
-
-set returns [result]:
-  ^(SET_ATTR subj=attribute t=type? block)
-  { 
-    var value = $block.result;
-    var objs = $subj.objects;
-    var attr = $subj.attr;
-
-    if (obj) {
-      for (var obj in objs) {
-        subj.setAttr(attr, value);
-      };
-    } else {
-      this.setObject(attr, value);
-    }
-
-    $result = value;
-  }
-;
-
-new returns [type, result]:
-  ^(NEW_OBJECT t=type)
-  { 
-    $type = $t.type;
-    $result = this.createObject($type);
-  }
+  ^(ACTION subj=noun object=noun*)
+  { $result = this.getObject($subj.word); }
 ;
 
 attribute returns [result, attr, objects]:
