@@ -7,47 +7,90 @@ options {
 }
 
 @members {
-  dynagramObject = function(type) {
+  dynagramObject = function(type, value) {
     this.type = type;
 
     this.attrs = {};
     
-    this.setAttr = function(val) {
+    this.setAttr = function(attr, val) {
       this.attrs[attr] = val;
     };
+    
+    this.getAttr = function(attr) {
+      var attr = this.attrs[attr];
+    }
 
-    this.getAttr = function(val) {
-      return this.attrs[attr];
+    this.getAction = function(actionName) {
+      var action = this.attrs[actionName];
+      if (action === undefined) {
+        console.log("Action '", actionName, "' of", this, "does not exist");
+        action = new dynagramAction(this, actionName);
+      }
+
+      return action;
     };
+
+    this.defineAction = function(action) {
+      var scope = this;
+      var define = new dynagramAction(this);
+      define.name = "define";
+      define.eval = function() {
+        console.log("Defining", action);
+        scope.setAttr(action.name, action);
+      };
+      return define;
+    };
+
+    switch(this.type) {
+      case "scope":
+        this.eval = function(actions) {
+          console.log("Evaluating scope.");
+          console.log(actions);
+          for (var a in actions) {
+            actions[a].eval();
+          }
+        };
+        break;
+
+      default:
+        this.eval = function() {
+          return value;
+        };
+        break;
+    }
 
     return;
   };
 
-  dynagramActionPlan = function(scope) {
+  dynagramAction = function(scope, name) {
     this.__proto__ = scope;
 
+    this.name = name;
     this.cases = {};
+    
+    this.case_params = undefined;
 
-    this.setCase = function(params, action) {
-      this.cases[params] = action;
+    this.setCase = function(actions, params) {
+      this.cases[params] = actions;
     };
 
     this.getCase = function(params) {
-      return this.cases[params];
+      var _case = new dynagramAction(this.scope, this.name);
+      _case.cases = this.cases;
+      _case.case_params = params;
+      return _case;
     };
-  };
 
-  dynagramAction = function(actionPlan, params) {
-    this.__proto__ = actionPlan;
-
-    this.params = params;
-    this.subActions = this.getCase(this.params);
-    
     this.eval = function() {
-      for (var a in this.subactions) {
-        var subAction = this.subActions[a];
+      console.log("Performing '", this.name, "' action");
+
+      var subActions = this.cases[this.case_params];
+
+      for (var a in subActions) {
+        var subAction = subActions[a];
         var result = subAction.eval();
       }
+
       return result;
     };
   }
@@ -57,31 +100,61 @@ options {
 
 
 diagram:
-  (action|control)+
+  { var diagram = new dynagramObject('scope'); }
+  block[diagram]
+  { diagram.eval($block.actions); }
 ;
 
-block returns [result]:
-  (action|control)+
-  { $result = $action.result; }
+block [scope] returns [actions]:
+  { $actions = []; }
+  (
+    action[scope]
+    { $actions.push($action.action); }
+  | control[scope]
+  )+
 ;
 
-control:
-    ^(ITERATION_WHILE condition block)
-  | ^(ITERATION_FOR noun noun block)
-  | ^(CONDITION condition block)
+action [scope] returns [action]:
+     def[scope]
+     { $action = $def.action; }
+   | set[scope]
+     { $action = $set.action; }
+   | new[scope]
+     { $action = $new.action; }
+   | ^(ACTION subj=noun objects+=noun*)
+    {
+      var action = $scope.getAction($ACTION.text);
+      $action = action.getCase({subject: $subj.word, objects: $objects});
+    }
 ;
 
-condition returns [result]:
-  attribute
+def [scope] returns [action]:
+  ^(DEFINE_ACTION subj=action[scope] t=type? block[scope])
+  { $action = scope.defineAction($subj.action); }
+;
+
+set [scope] returns [action]:
+  ^(SET_ATTR subj=attribute[scope] t=type? block[scope])
+  { $action = new dynagramAction(); /*TODO*/ }
+;
+
+new [scope] returns [action]:
+  ^(NEW_OBJECT t=type)
+  { $action = new dynagramAction(); /*TODO*/ }
+;
+
+control [scope]:
+    ^(ITERATION_WHILE condition[scope] block[scope])
+  | ^(ITERATION_FOR noun noun block[scope])
+  | ^(CONDITION condition[scope] block[scope])
+;
+
+condition [scope] returns [result]:
+  attribute[scope]
   { $result = $attribute.result ? true : false; }
 ;
 
-action returns [result]:
-  ^(ACTION subj=noun object=noun*)
-  { $result = this.getObject($subj.word); }
-;
-
-attribute returns [result, attr, objects]:
+attribute [scope] returns [result, attr, objects]:
   ^(ATTRIBUTE atr=noun objs+=noun*)
   {
     var subj = $atr.word.text;
@@ -103,12 +176,12 @@ attribute returns [result, attr, objects]:
 
 verb returns [word]:
   w=(ID|STRING)
-  { $word = $w; }
+  { $word = $w.text; }
 ;
 
 noun returns [word]:
   ARTICLE? w=(ID|STRING|NUM)
-  { $word = $w; }
+  { $word = $w.text; }
 ;
 
 type returns [type]:
