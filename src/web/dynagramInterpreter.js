@@ -14,13 +14,16 @@ dynagramInterpreter = function(display) {
     parser = new dynagramParser(tstream);
     var diagram = parser.diagram();
     var tree = diagram.tree;
+
+    // Type Checker
     var nodes = new org.antlr.runtime.tree.CommonTreeNodeStream(tree);
     nodes.setTokenStream(tstream);
-    // Type Checker
     var checker = new dynagramTypeChecker(nodes);
     var diagram = checker.diagram();
+
     // Evaluator
-    nodes.reset();
+    var nodes = new org.antlr.runtime.tree.CommonTreeNodeStream(tree);
+    nodes.setTokenStream(tstream);
     var evaluater = new dynagramEvaluater(nodes);
     eval = evaluater.diagram();
   };
