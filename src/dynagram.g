@@ -35,7 +35,7 @@ tokens {
 
 
 diagram:
-  (action|control)+
+  action+
 ;
 
 block:
@@ -75,8 +75,6 @@ condition:
 action:
     general_action
   | define_action
-  | set_attribute
-  | new_object
 ;
 
 general_action:
@@ -85,19 +83,14 @@ general_action:
 ;
 
 define_action:
-    act=DEFINE_KW '(' subject=general_action ')' AS type? def=block
-    -> ^(DEFINE_ACTION[$act] $subject? type? block)
+    act=verb (subject=action_reference | subject=attribute) AS def=block
+    -> ^(DEFINE_ACTION[$act.word] $subject? block)
 ;
 
-set_attribute:
-    act=SET_KW subject=attribute AS type? val=block
-    -> ^(SET_ATTR[$act] $subject type? block)
+action_reference:
+  CASE_START! general_action CASE_END!
 ;
 
-new_object:
-    act=NEW_KW type
-    -> ^(NEW_OBJECT[$act] type)
-;
 
 /*****************************
 * Attributes
@@ -128,10 +121,6 @@ type:
 ;
 
 
-DEFINE_KW           : 'define' ;
-SET_KW              : 'set' ;
-NEW_KW              : 'new';
-
 ARTICLE             : 'the'|'an'|'a' ;
 AND                 : 'and'|',' ;
 AS                  : 'as' ; 
@@ -141,6 +130,9 @@ FOR                 : 'for' ;
 THEN                : 'then' ;
 WHILE               : 'while' ;
 PREPOSITION         : 'with'|'between'|'of'|'to'|'from' ;
+
+CASE_START          : '(' ;
+CASE_END            : ')' ; 
 
 ID                  : ('a'..'z'|'A'..'Z') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')* ;
 NUM                 : '0'..'9'+ ;

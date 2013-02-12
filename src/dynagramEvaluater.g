@@ -82,12 +82,9 @@ options {
 
     switch(this.type) {
       case "scope":
-        this.eval = function(actions) {
-          console.log("Evaluating scope.");
-          console.log(actions);
-          for (var a in actions) {
-            actions[a].eval();
-          }
+        this.eval = function(action) {
+          console.log("Evaluating", action, "at root scope.");
+          action.eval();
         };
         break;
 
@@ -154,14 +151,18 @@ options {
 diagram:
   { var diagram = new dynagramObject('scope'); }
   block[diagram]
-  { diagram.eval($block.actions); }
+
+  { 
+    for (var a in $block.actions)
+      diagram.eval($block.actions[a]);
+  }
 ;
 
 block [scope] returns [actions]:
   { $actions = []; }
   (
     action[scope]
-    { $actions.push($action.action); }
+    { $actions.push($action.action);}
   | control[scope]
   )+
 ;
@@ -171,8 +172,6 @@ action [scope] returns [action]:
      { $action = $def.action; }
    | set[scope]
      { $action = $set.action; }
-   | new[scope]
-     { $action = $new.action; }
    | ^(ACTION subj=noun objects+=noun*)
     {
       var action = $scope.getAction($ACTION.text);
@@ -188,18 +187,13 @@ action [scope] returns [action]:
 ;
 
 def [scope] returns [action]:
-  ^(DEFINE_ACTION subj=action[scope] t=type? block[scope])
+  ^(DEFINE_ACTION subj=action[scope] block[scope])
   { $action = $scope.defineAction($subj.action, $block.actions); }
 ;
 
 set [scope] returns [action]:
-  ^(SET_ATTR subj=attribute[scope] t=type? block[scope])
+  ^(DEFINE_ACTION subj=attribute[scope] block[scope])
   { $action = $scope.setAction($subj.attr, $block.actions); }
-;
-
-new [scope] returns [action]:
-  ^(NEW_OBJECT t=type)
-  { $action = $scope.newAction($t.type); }
 ;
 
 control [scope]:
@@ -226,9 +220,3 @@ noun returns [word]:
   ARTICLE? w=(ID|STRING|NUM)
   { $word = $w.text; }
 ;
-
-type returns [type]:
-  t=TYPE
-  { $type = $t.text; }
-;
-

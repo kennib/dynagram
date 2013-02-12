@@ -16,10 +16,10 @@ dynagramInterpreter = function(display) {
     var tree = diagram.tree;
 
     // Type Checker
-    var nodes = new org.antlr.runtime.tree.CommonTreeNodeStream(tree);
+    /*var nodes = new org.antlr.runtime.tree.CommonTreeNodeStream(tree);
     nodes.setTokenStream(tstream);
     var checker = new dynagramTypeChecker(nodes);
-    var diagram = checker.diagram();
+    var diagram = checker.diagram();*/
 
     // Evaluator
     var nodes = new org.antlr.runtime.tree.CommonTreeNodeStream(tree);

@@ -13,13 +13,14 @@
   </head>
   <body>
     <dynagram style="width: 750px">
-define (count 0 to 1) as list
+define (count 0 to 1) as
   set nums as
     new list
   append 0 to nums
+  print nums
   return nums
   
-define (count from 0 to num) as list
+define (count from 0 to num) as
   set prev_num as
     minus 1 from num
   set prev_nums as
