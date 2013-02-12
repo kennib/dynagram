@@ -18,7 +18,7 @@ tokens {
 }
 
 @lexer::members {
-  previousIndents = -1;
+  previousIndents = 0;
   indentLevel = 0;
 
   this.jump = function(ttype) {
