@@ -5,16 +5,13 @@ options {
 }
 
 tokens {
-  ITERATION_FOR;
-  ITERATION_WHILE;
-  CONDITION;
   ACTION;
   ATTRIBUTE;
+  BLOCK;
   TYPE;
 
-  DEFINE_ACTION;
-  SET_ATTR;
-  NEW_OBJECT;
+  CASE_ACTION;
+  ATTR_ACTION;
 }
 
 @lexer::members {
@@ -35,70 +32,30 @@ tokens {
 
 
 diagram:
-  action+
+  actions+=action+
+  -> ^(BLOCK $actions+)
 ;
 
 block:
-  INDENT! (action|control)+ (DEDENT|EOF)!
+  INDENT actions+=action+ (DEDENT|EOF)
+  -> ^(BLOCK $actions+)
 ;
 
-
-/*****************************
-* Control Flow
-******************************/
-
-control:
-  ( iteration | conditional )
-;
-
-iteration:
-    FOR object=noun IN list=noun body=block
-    -> ^(ITERATION_FOR $object $list $body)
-
-  | WHILE condition body=block
-    -> ^(ITERATION_WHILE condition $body)
-;
-
-conditional:
-    IF condition THEN body=block
-    -> ^(CONDITION condition $body)
-;
-
-condition:
-  attribute
-;
 
 /*****************************
 * Actions
 ******************************/
 
 action:
-    general_action
-  | define_action
+    act=verb
+    PREPOSITION? (subject=noun | subject=case)
+    ((PREPOSITION (objects+=noun | objects+=block))
+     ((PREPOSITION|AND) (objects+=noun | objects+=block))*)?
+    -> ^(ACTION[$act.word] $subject $objects*)
 ;
 
-general_action:
-    act=verb PREPOSITION? subject=noun ((PREPOSITION object+=noun) (AND object+=noun)*)?
-    -> ^(ACTION[$act.word] $subject $object*)
-;
-
-define_action:
-    act=verb (subject=action_reference | subject=attribute) AS def=block
-    -> ^(DEFINE_ACTION[$act.word] $subject? block)
-;
-
-action_reference:
-  CASE_START! general_action CASE_END!
-;
-
-
-/*****************************
-* Attributes
-******************************/
-
-attribute:
-    attr=noun (PREPOSITION object+=noun (AND object+=noun)*)?
-    -> ^(ATTRIBUTE $attr $object*)
+case:
+  CASE_START! action CASE_END!
 ;
 
 
@@ -123,13 +80,12 @@ type:
 
 ARTICLE             : 'the'|'an'|'a' ;
 AND                 : 'and'|',' ;
-AS                  : 'as' ; 
 IF                  : 'if' ;
 IN                  : 'in' ;
 FOR                 : 'for' ;
 THEN                : 'then' ;
 WHILE               : 'while' ;
-PREPOSITION         : 'with'|'between'|'of'|'to'|'from' ;
+PREPOSITION         : 'with'|'between'|'of'|'to'|'from'|'as' ;
 
 CASE_START          : '(' ;
 CASE_END            : ')' ; 
