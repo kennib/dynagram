@@ -85,12 +85,34 @@ options {
       return _case;
     };
 
+    this.getSubActions = function(params) {
+      var subActions = this.cases[params];
+      if (subActions === undefined) {
+        for (var c in this.cases) {
+          var _case = this.cases[c];
+          
+          var match = true;
+          for (var param in _case) {
+            if (params[param] != _case[param]) {
+              match = false;
+              break;
+            }
+          }
+
+          if(match)
+            return _case
+        }
+      }
+
+      return subActions;
+    };
+
     this.eval = function(scope) {
       console.log("Performing", "'"+this.name+"'", "action");
 
       this.__proto__ = scope;
 
-      var subActions = this.cases[this.caseParams];
+      var subActions = this.getSubActions(this.caseParams);
 
       for (var a in subActions) {
         var subAction = subActions[a];
