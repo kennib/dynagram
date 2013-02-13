@@ -26,10 +26,11 @@ options {
 
     this.getAction = function(actionName) {
       var action = this.getAttr(actionName);
+
       if (action === undefined) {
         console.log("Action", "'"+actionName+"'", "of", this, "does not exist");
         action = new dynagramAction(actionName);
-        this.setAction(actionName, action);
+        this.setAction(action);
       }
 
       return action;
@@ -77,6 +78,7 @@ options {
         this.addCase([], params);
 
       var _case = new dynagramAction(this.name);
+      _case.eval = this.eval;
       _case.cases = this.cases;
       _case.caseParams = params;
 
@@ -99,7 +101,20 @@ options {
     };
   }
 
+  var defineAction = new dynagramAction('define');
+  defineAction.eval = function(scope) {
+    var action = this.caseParams[0];
+    var subActions = this.caseParams[1];
+    
+    var scopeAction = scope.getAction(action.name);
+    scopeAction.addCase(subActions, action.caseParams);
+    console.log("Defining", action, scopeAction);
+
+    return scopeAction;
+  };
+
   rootScope = new dynagramObject('scope');
+  rootScope.setAction(defineAction);
 
   console.log(this);
 }
@@ -113,6 +128,7 @@ diagram:
     for (var a in $block.actions)
       diagram.eval($block.actions[a]);
   }
+  { console.log(rootScope); }
 ;
 
 block [scope] returns [actions]:
