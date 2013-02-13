@@ -6,14 +6,26 @@ dynagramInterpreter = function(display) {
   this.states = {};
 
   this.eval = function(input) {
+    // Scanner and Lexer
     var cstream = new org.antlr.runtime.ANTLRStringStream(input);
-    var lexer = new dynagramLexer(cstream);
+    lexer = new dynagramLexer(cstream);
     var tstream = new org.antlr.runtime.CommonTokenStream(lexer);
-    var parser = new dynagramParser(tstream);
-    var tree = parser.diagram().tree;
+    // Parser
+    parser = new dynagramParser(tstream);
+    var diagram = parser.diagram();
+    var tree = diagram.tree;
 
-    this.eval_tree(tree);
-    return tree;
+    // Type Checker
+    /*var nodes = new org.antlr.runtime.tree.CommonTreeNodeStream(tree);
+    nodes.setTokenStream(tstream);
+    var checker = new dynagramTypeChecker(nodes);
+    var diagram = checker.diagram();*/
+
+    // Evaluator
+    var nodes = new org.antlr.runtime.tree.CommonTreeNodeStream(tree);
+    nodes.setTokenStream(tstream);
+    var evaluater = new dynagramEvaluater(nodes);
+    eval = evaluater.diagram();
   };
 
   this.eval_tree = function(tree) {
@@ -105,9 +117,12 @@ dynagramInterpreter = function(display) {
         // Get index
         if (tree.children[2])
           var index = tree.children[2].getText();
+        else
+          var index = this.listItems[listName].length;
 
         // Insert item into list
         list.insert(item, index);
+        this.listItems[listName].splice(index,0,item);
         break;
 
       case "REVERSE":

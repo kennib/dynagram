@@ -4,18 +4,34 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js" type="text/javascript"></script>
     <script src="raphael.js" type="text/javascript"></script>
     <script src="dynagramRaphael.js" type="text/javascript"></script>
-    <script src="antlr3-all-min.js" type="text/javascript"></script>
+    <script src="antlr3-all.js" type="text/javascript"></script>
     <script src="dynagramLexer.js" type="text/javascript"></script>
     <script src="dynagramParser.js" type="text/javascript"></script>
+    <script src="dynagramTypeChecker.js" type="text/javascript"></script>
+    <script src="dynagramEvaluater.js" type="text/javascript"></script>
     <script src="dynagramInterpreter.js" type="text/javascript"></script>
   </head>
   <body>
     <dynagram style="width: 750px">
-list days contains monday, tuesday, wednesday, thursday, friday.
-state weekdays.
-insert saturday into days.
-insert sunday into days at 0.
-state all_days.
+define (count 0 to 1) as
+  set nums as
+    new list
+  append 0 to nums
+  print nums
+  return nums
+  
+define (count from 0 to num) as
+  set prev_num as
+    minus 1 from num
+  set prev_nums as
+    count 0 to prev_num
+  append prev_num to prev_nums
+  return prev_nums
+
+set digits as
+  count 0 to 10
+for num in digits
+  print num
     </dynagram>
 
     <script type="text/javascript">
@@ -25,7 +41,7 @@ state all_days.
         $(this).css('white-space', 'nowrap');
 
         // Get the text and empty the element
-        text = $(this).text(); 
+        text = $.trim($(this).text()); 
         $(this).empty();
 
         // Create the diagram stage
@@ -34,7 +50,8 @@ state all_days.
 
         // Draw the dynagram
         interpreter = new dynagramInterpreter(diagram);
-        interpreter.eval(text);
+        if (text)
+          interpreter.eval(text);
 
         // Add the dynagram code to a new text area
         textbox = $('<textarea></textarea>').appendTo($(this));
@@ -43,7 +60,7 @@ state all_days.
           width: $(this).width(), height: 200
         });
         $(this).height($(this).height()+200);
-        textbox.text($.trim(text));
+        textbox.text(text);
 
         // Make diagram update when the code is changed
         textbox.change(function() {

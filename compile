@@ -8,7 +8,7 @@ BUILD_DIR=$MAIN_DIR/build
 WEB_DIR=~/lib/html/dynagram
 
 # Builds the ANTLR-generated parser using the grammar file
-java -cp ${MAIN_DIR}/antlr-3.1.2.jar org.antlr.Tool ${SOURCE_DIR}/dynagram.g -fo ${BUILD_DIR} 
+java -cp ${MAIN_DIR}/antlr-3.1.2.jar org.antlr.Tool ${SOURCE_DIR}/*.g -fo ${BUILD_DIR} 
 
 # Places necessary web source files into build
 cp -R ${WEBSOURCE_DIR}/* ${BUILD_DIR}

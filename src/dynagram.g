@@ -5,121 +5,129 @@ options {
 }
 
 tokens {
-  FOR_LOOP;
-  ACTIONS;
   ACTION;
+  ATTRIBUTE;
+  BLOCK;
+  TYPE;
 
-  STATE;
-  LIST;
-  ITEMS;
-
-  INSERT;
-  REMOVE;
-  REVERSE;
-
-  DEFINE;
-  OPTIONS;
-  OPTION;
-  ID;
+  CASE_ACTION;
+  ATTR_ACTION;
 }
 
+@lexer::members {
+  previousIndents = 0;
+  indentLevel = 0;
+
+  this.jump = function(ttype) {
+    indentLevel += (ttype == this.DEDENT ? -1 : 1);
+    
+    var indent = '';
+    for (var i=0; i<indentLevel; i++) indent += '  ';
+
+    var level = new org.antlr.runtime.CommonToken(ttype, '\n'+indent);
+    level.setLine(this.getLine());
+    this.emit(level);
+  }
+}
+
+
 diagram:
-  (sentence EOS)* -> sentence*
+  actions+=action+
+  -> ^(BLOCK $actions+)
 ;
 
-sentence:
-  (control_flow | action)
-;
-
-/*****************************
-* Control Flow
-******************************/
-
-control_flow:
-    for_loop 
-;
-
-for_loop:
-  FOR_LOOP_KW item FOR_LOOP_PREP list EOC action (EOSS action)*  -> ^(FOR_LOOP item list ^(ACTIONS action+))
+block:
+  INDENT actions+=action+ (DEDENT|EOF)
+  -> ^(BLOCK $actions+)
 ;
 
 
 /*****************************
 * Actions
 ******************************/
+
 action:
-   action_type                                                   -> ^(ACTION action_type)
+    act=verb
+    PREPOSITION? (subject=noun | subject=case)
+    ((PREPOSITION (objects+=noun | objects+=block))
+     ((PREPOSITION|AND) (objects+=noun | objects+=block))*)?
+    -> ^(ACTION[$act.word] $subject $objects*)
 ;
 
-action_type:
-    state_action
-  | list_action
-  | item_action
+case:
+  CASE_START! action CASE_END!
 ;
 
-state_action:
-    STATE_KW s?                                                  -> ^(STATE s?)
-;
-
-list_action:
-    LIST_KW list LIST_PREP item (LIST_SEP item)*                 -> ^(LIST list ^(ITEMS item*))
-  | INSERT_KW item INSERT_PREP list (INSERT_POS_PREP NUM)?       -> ^(INSERT list item NUM?)
-  | REMOVE_KW item REMOVE_PREP list                              -> ^(REMOVE list item)
-  | REVERSE_KW list                                              -> ^(REVERSE list)
-;
-
-item_action:
-    DEFINE_KW item (DEFINE_PREP option (LIST_SEP option)*)?      -> ^(DEFINE item ^(OPTIONS option*))
-;
-
-option:
-    opt OPTION_PREP val -> ^(OPTION opt val)
-;
 
 /*****************************
 * Literals
 ******************************/
-s: ID;
-list: ID;
-item: ID;
-opt: ID|STRING;
-val: NUM|STRING;
 
-EOS                 : '.' ; // end of sentence
-EOSS                : ';' ; // end of sub-sentence
-EOC                 : ':' ; // end of control flow
-LIST_SEP            : ',' ;
+verb returns [word]:
+  w=(ID|STRING)
+  { $word = $w; }
+;
 
-FOR_LOOP_KW         : 'for' ;
-FOR_LOOP_PREP       : 'in' ;
+noun returns [word]:
+  ARTICLE? w=(ID|STRING|NUM)
+  { $word = $w; }
+;
 
-STATE_KW            : 'state';
+type:
+  noun -> TYPE[$noun.word]
+;
 
-DEFINE_KW           : 'define' ;
-DEFINE_PREP         : 'with' ;
 
-LIST_KW             : 'list';
-LIST_PREP           : 'contains' ;
+ARTICLE             : 'the'|'an'|'a' ;
+AND                 : 'and'|',' ;
+IF                  : 'if' ;
+IN                  : 'in' ;
+FOR                 : 'for' ;
+THEN                : 'then' ;
+WHILE               : 'while' ;
+PREPOSITION         : 'with'|'between'|'of'|'to'|'from'|'as' ;
 
-INSERT_KW           : 'insert' ;
-INSERT_PREP         : 'into' ;
-INSERT_POS_PREP     : 'at' ;
-REMOVE_KW           : 'remove' ;
-REMOVE_PREP         : 'from' ;
-REVERSE_KW          : 'reverse' ;
-
-OPTION_PREP         : 'as'|;
+CASE_START          : '(' ;
+CASE_END            : ')' ; 
 
 ID                  : ('a'..'z'|'A'..'Z') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')* ;
 NUM                 : '0'..'9'+ ;
-
-ESC_CHAR            : '\\' . ;
 STRING:
    ('"'  (ESC_CHAR | ~('"' |'\\'|'\n'))* '"'
   | '\'' (ESC_CHAR | ~('\''|'\\'|'\n'))* '\'')
   // Remove quotes
   {this.setText(this.getText().substring(1, this.getText().length-1));}
-; 
+;
 
+ESC_CHAR            : '\\' . ;
 
-WS : (' '|'\t'|'\r'|'\n')+ {$channel=HIDDEN;} ;
+WS:
+  SP { $channel=HIDDEN; }
+;
+
+NEWLINE:
+  NL SP?
+  {
+    n = (!$SP.text ? 0 : $SP.text.length);
+    //console.log('line: '+this.state.tokenStartLine+', indent: '+n);
+
+    if(n > previousIndents) {
+      this.jump(this.INDENT);
+      previousIndents = n;
+    } else if(n < previousIndents) {
+      this.jump(this.DEDENT);
+      previousIndents = n;
+    } else if(this.input.LA(1) == EOF) {
+      while(indentLevel > 0) {
+        this.jump(this.DEDENT);
+      }
+    } else {
+      this.skip();
+    }
+  }
+;
+
+fragment NL     : '\r'? '\n' | '\r';
+fragment SP     : (' ' | '\t')+;
+fragment INDENT : ;
+fragment DEDENT : ;
