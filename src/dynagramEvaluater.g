@@ -7,8 +7,21 @@ options {
 }
 
 @members {
-  dynagramObject = function(type, value) {
-    this.type = type;
+  dynagramObject = function(name, type) {
+    this.name = name;
+
+    if (type != undefined)
+      this.type = type;
+    else
+      this.type = 'object';
+
+    this.setValue = function(value) {
+      this.value = value;
+    };
+    
+    this.getValue = function() {
+      return this.value;
+    };
 
     this.attrs = {};
     
@@ -34,6 +47,22 @@ options {
       }
 
       return action;
+    };
+
+    this.setObject = function(object) {
+      this.setAttr(object.name, object);
+    }
+
+    this.getObject = function(name, type) {
+      var object = this.getAttr(name);
+
+      if (object === undefined) {
+        console.log("Object", "'"+name+"'", "of", this, "does not exist");
+        object = new dynagramObject(name, type);
+        this.setObject(object);
+      }
+
+      return object;
     };
 
     switch(this.type) {
@@ -93,7 +122,7 @@ options {
           
           var match = true;
           for (var param in _case) {
-            if (params[param] != _case[param]) {
+            if (params[param].getValue() != _case[param].getValue()) {
               match = false;
               break;
             }
@@ -135,7 +164,7 @@ options {
     return scopeAction;
   };
 
-  rootScope = new dynagramObject('scope');
+  rootScope = new dynagramObject('root', 'scope');
   rootScope.setAction(defineAction);
 
   console.log(this);
@@ -164,30 +193,43 @@ block [scope] returns [actions]:
 action [scope] returns [action]:
   { var params = []; }
   ^(ACTION
-    ( subj=noun
-      { params.push($subj.word); }
+    act=verb[scope]
+
+    ( subj=noun[scope]
+      { params.push($subj.object); }
     | act=action[scope]
       { params.push($act.action); }
     )
 
-    ( obj=noun
-      { params.push($obj.word); }
+    ( obj=noun[scope]
+      { params.push($obj.object); }
     | block[scope]
       { params.push($block.actions); }
     )*
   )
   {
-    var action = $scope.getAction($ACTION.text);
-    $action = action.getCase(params);
+    $action = $verb.action.getCase(params);
   }
 ;
 
-verb returns [word]:
+verb[scope] returns [action]:
   w=(ID|STRING)
-  { $word = $w.text; }
+  { $action = $scope.getAction($w.text); }
 ;
 
-noun returns [word]:
-  ARTICLE? w=(ID|STRING|NUM)
-  { $word = $w.text; }
+noun[scope] returns [object]:
+  ARTICLE?
+  ( w=ID
+    { var type = "object"; var value = undefined; }
+  | w=STRING
+    { var type = "string"; var value = $w.text; }
+  | w=NUM
+    { var type = "number"; var value = parseInt($w.text); }
+  | w=TYPE
+    { var type = "type"; var value = null; }
+  )
+  {
+    $object = $scope.getObject($w.text, type);
+    $object.setValue(value);
+  }
 ;

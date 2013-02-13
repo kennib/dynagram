@@ -51,7 +51,7 @@ action:
     PREPOSITION? (subject=noun | subject=case)
     ((PREPOSITION (objects+=noun | objects+=block))
      ((PREPOSITION|AND) (objects+=noun | objects+=block))*)?
-    -> ^(ACTION[$act.word] $subject $objects*)
+    -> ^(ACTION $act $subject $objects*)
 ;
 
 case:
@@ -63,20 +63,13 @@ case:
 * Literals
 ******************************/
 
-verb returns [word]:
-  w=(ID|STRING)
-  { $word = $w; }
+verb:
+  (ID|STRING)
 ;
 
-noun returns [word]:
-  ARTICLE? w=(ID|STRING|NUM)
-  { $word = $w; }
+noun:
+  ARTICLE? (ID|STRING|NUM|TYPE)
 ;
-
-type:
-  noun -> TYPE[$noun.word]
-;
-
 
 ARTICLE             : 'the'|'an'|'a' ;
 AND                 : 'and'|',' ;
@@ -86,6 +79,7 @@ FOR                 : 'for' ;
 THEN                : 'then' ;
 WHILE               : 'while' ;
 PREPOSITION         : 'with'|'between'|'of'|'to'|'from'|'as' ;
+TYPE                : 'list'|'number'|'string' ;
 
 CASE_START          : '(' ;
 CASE_END            : ')' ; 
