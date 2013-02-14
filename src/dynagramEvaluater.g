@@ -23,6 +23,10 @@ options {
       return this.value;
     };
 
+    this.toString = function() {
+      return this.type+':'+this.getValue();
+    };
+
     this.attrs = {};
     
     this.setAttr = function(attr, val) {
@@ -66,11 +70,19 @@ options {
     };
 
     switch(this.type) {
-      case "scope":
-        this.eval = function(action) {
-          console.log("Evaluating", action, "at root scope.");
-          action.eval(this);
+      case "actions":
+        this.actions = [];
+        this.addAction = function(action) {
+          this.actions.push(action);
         };
+
+        this.eval = function() {
+          for (var a in this.actions) {
+            console.log("Evaluating", this.actions[a], "at", this.name, "scope.");
+            this.actions[a].eval(this);
+          };
+        };
+
         break;
 
       default:
@@ -86,7 +98,12 @@ options {
 
   dynagramAction = function(name) {
     this.name = name;
+    this.type = 'action';
     this.cases = {};
+
+    this.toString = function() {
+      return this.type+':'+this.name;
+    };
     
     this.caseParams = undefined;
 
@@ -119,7 +136,10 @@ options {
           
           var match = true;
           for (var param in _case) {
-            if (params[param].getValue() != _case[param].getValue()) {
+            if (
+              (_case[param].type === 'type' && params[param].type === _case[param].name)
+              || params[param].getValue() != _case[param].getValue()
+            ) {
               match = false;
               break;
             }
@@ -154,17 +174,23 @@ options {
 
   var defineAction = new dynagramAction('define');
   defineAction.eval = function(scope) {
-    var action = this.caseParams[0];
-    var subActions = this.caseParams[1];
+    var subject = this.caseParams[0];
+    var object = this.caseParams[1];
     
-    console.log("Defining", action, scopeAction);
-    var scopeAction = scope.getAction(action.name);
-    scopeAction.addCase(subActions, action.caseParams);
-
-    return scopeAction;
+    if (subject.type == 'action') {
+      var scopeAction = scope.getAction(subject.name);
+      scopeAction.addCase(object, subject.caseParams);
+      console.log("Defining", subject, object, scopeAction);
+      return scopeAction;
+    } else {
+      subject.type = object.type;
+      scope.setObject(subject);
+      console.log("Defining", subject, object);
+      return object;
+    }
   };
 
-  rootScope = new dynagramObject('root', 'scope');
+  rootScope = new dynagramObject('root', 'actions');
   rootScope.setAction(defineAction);
 
   console.log(this);
@@ -176,18 +202,15 @@ diagram:
   { var diagram = rootScope; }
   block[diagram]
 
-  { 
-    for (var a in $block.actions)
-      diagram.eval($block.actions[a]);
-  }
+  { $block.actions.eval(); }
   { console.log(rootScope); }
 ;
 
 block [scope] returns [actions]:
-  { $actions = []; }
+  { $actions = new dynagramObject('block', 'actions'); }
   ^(BLOCK
     (action[scope]
-    { $actions.push($action.action); })+
+    { $actions.addAction($action.action); })+
   )
 ;
 
@@ -219,13 +242,13 @@ verb[scope] returns [action]:
 noun[scope] returns [object]:
   ARTICLE?
   ( w=ID
-    { var type = "object"; var value = undefined; }
+    { var name = $w.text; type = "object"; var value = undefined; }
   | w=STRING
-    { var type = "string"; var value = $w.text; }
+    { var name = undefined; var type = "string"; var value = $w.text; }
   | w=NUM
-    { var type = "number"; var value = parseInt($w.text); }
+    { var name = undefined; var type = "number"; var value = parseInt($w.text); }
   | w=TYPE
-    { var type = "type"; var value = null; }
+    { var name = undefined; var type = "type"; var value = $w.text; }
   )
   {
     $object = $scope.getObject($w.text, type);
