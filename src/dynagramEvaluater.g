@@ -103,9 +103,6 @@ options {
     };
 
     this.getCase = function(params) {
-      if (this.cases[params] == undefined)
-        this.addCase([], params);
-
       var _case = new dynagramAction(this.name);
       _case.eval = this.eval;
       _case.cases = this.cases;
@@ -131,9 +128,12 @@ options {
           if(match)
             return _case
         }
-      }
 
-      return subActions;
+        console.log("There is no case for", params, "in", this.name);
+      
+      } else {
+        return subActions;
+      }
     };
 
     this.eval = function(scope) {
@@ -157,9 +157,9 @@ options {
     var action = this.caseParams[0];
     var subActions = this.caseParams[1];
     
+    console.log("Defining", action, scopeAction);
     var scopeAction = scope.getAction(action.name);
     scopeAction.addCase(subActions, action.caseParams);
-    console.log("Defining", action, scopeAction);
 
     return scopeAction;
   };
@@ -172,6 +172,7 @@ options {
 
 
 diagram:
+  {console.log(this.input.root.getTree().toStringTree());}
   { var diagram = rootScope; }
   block[diagram]
 
@@ -193,7 +194,7 @@ block [scope] returns [actions]:
 action [scope] returns [action]:
   { var params = []; }
   ^(ACTION
-    act=verb[scope]
+    verb[scope]
 
     ( subj=noun[scope]
       { params.push($subj.object); }
@@ -207,9 +208,7 @@ action [scope] returns [action]:
       { params.push($block.actions); }
     )*
   )
-  {
-    $action = $verb.action.getCase(params);
-  }
+  { $action = $verb.action.getCase(params); }
 ;
 
 verb[scope] returns [action]:
