@@ -13,25 +13,24 @@
   </head>
   <body>
     <dynagram style="width: 750px">
-define (count 0 to 1) as
-  set nums as
-    new list
+define (count from 0 to 1) as
+  define nums as a list
   append 0 to nums
   print nums
   return nums
   
-define (count from 0 to num) as
-  set prev_num as
+define (count from 0 to a number) as
+  define prev_num as
     minus 1 from num
-  set prev_nums as
+  define prev_nums as
     count 0 to prev_num
   append prev_num to prev_nums
   return prev_nums
 
-set digits as
-  count 0 to 10
-for num in digits
-  print num
+define digits as
+  count from 0 to 10
+for digit in digits
+  print digit
     </dynagram>
 
     <script type="text/javascript">
